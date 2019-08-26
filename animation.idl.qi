@@ -1,0 +1,24 @@
+package qi.actuation
+
+//! @brief Object representing a robot animation. An animation can be composed
+//! of gestures performed by the robot limbs, head, and/or trajectories
+//! performed by the robot base.
+//! @since 1
+interface Animation
+  //! @brief Retrieve animation duration.
+  //! @return The animation duration in nanoseconds.
+  //! @since 1
+  fn duration() -> nsec
+
+  //! @brief Retrieve animation labels.
+  //! @return A map of labels, with for each label the times of occurrence in
+  //! increasing order.
+  //! The labels are UTF-8 encoded.
+  //! @since 1
+  fn labels() -> Map<str, Vec<nsec> >
+
+  //! @brief Animation ID.
+  //! @return A unique identifier for internal purpose. Do not use.
+  //! @since 1
+  fn _getId() -> str
+end

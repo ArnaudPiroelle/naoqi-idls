@@ -1,0 +1,56 @@
+package qi.focus
+
+//! A service tracking the current focus, and guaranteeing that only one client
+//! has the focus at the same time.
+//! The focus is required for actions to be performed on the robot. This
+//! mechanism ensures the focus owner that it can be the only one to control
+//! the robot as long as its FocusOwner is not released.
+//! @since 1
+interface Focus
+  //! Take the focus. It may fail if the robot is busy and focused on something
+  //! else, for example in an interactive activity or in safeguard.
+  //! @return A handle owning the focus.
+  //! @since 1
+  fn take() -> FocusOwner
+
+  //! Take the focus from the given token.
+  //! If the token matched the one of the current focus, the ownership is
+  //! transmitted to the taker. Any user having the FocusOwner would be released.
+  //! Otherwise, it behaves like takeFocus.
+  //! @param token The token authenticating the focus ownership.
+  //! @return A handle owning the focus.
+  //! @since 1
+  fn take(token: str) -> FocusOwner
+
+  //! Check the FocusOwner provided to tell whether it is recognized as
+  //! representing the current focused activity.
+  //! @param focusOwner The focus owner to check.
+  //! @return True if the focus is effectively owned, false otherwise.
+  //! @since 1
+  fn check(focusOwner: FocusOwner) -> bool
+end
+
+//! A FocusOwner represents a focus being taken from the focus service.
+//! It serves only once, and emits released() whenever the focus is released.
+//! A FocusOwner that was released is invalid.
+//! @since 1
+interface FocusOwner
+  //! Release the focus and invalidate this FocusOwner.
+  //! @since 1
+  fn release()
+
+  //! The token carried by this FocusOwner.
+  //! @return The token authenticating this focus ownership.
+  //! @since 1
+  fn token() -> str
+
+  //! Emitted when the focus is released and therefore invalidated.
+  //! @since 1
+  sig released()
+
+  //! Unique identifier for internal purpose. Do not use.
+  //! @return The identifier of this instance.
+  //! @since 1
+  //! @deprecated
+  fn _id() -> str
+end

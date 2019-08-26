@@ -1,0 +1,74 @@
+package qi.humanawareness
+
+from qi.actuation import Frame
+import qi.context
+import qi.human
+
+
+//! @brief Eye contact policy.
+//! @since 2
+enum EngagementPolicy
+   //! @brief The robot always keeps eye contact with the engaged human, ignoring any occurring stimulus.
+   //! @since 2
+   const Strict = 0
+end
+
+//! @brief Action to make the robot look at a human and keep eye contact.
+//! @since 2
+interface EngageHuman
+  //! @brief Engage the target human with the given policy.
+  //! The method returns when the robot lost sight of the human.
+  //! The signal humanIsEngaged is raised when the robot starts to engage the human.
+  //! @since 2
+  fn run()
+
+  //! @brief Emitted when the action starts running.
+  //! @since 3
+  sig started()
+
+  //! @brief Notify when the robot starts to engage a human.
+  //! It's raised when the method, run successfully, began to engage a human.
+  //! @since 2
+  sig humanIsEngaged()
+
+  //! @brief Notify when the engaged human shows the intention to quit the interaction with the robot.
+  //! @since 3
+  sig humanIsDisengaging()
+
+  //! @brief Expose the eye contact policy.
+  //! It can be change dynamically while the engage action is running.
+  //! @observable
+  //! @mutable
+  //! @since 2
+  prop engagementPolicy(engagementPolicy: EngagementPolicy)
+end
+
+//! @brief Service exposing actions and properties related to human-robot interaction.
+//! @since 2
+interface HumanAwareness
+  //! @brief Generate an 'engage human' action.
+  //! @param context The context to authorize the action to be effectively executed on a robot.
+  //! @param target The human to engage.
+  //! @return The 'engage human' action.
+  //! @since 2
+  fn makeEngageHuman(context: qi.context.Context, target: qi.human.Human) -> EngageHuman
+
+  //! @brief Expose the humans detected and notify when a human is found or lost.
+  //! @observable
+  //! @since 2
+  prop humansAround(humans: Vec<qi.human.Human>)
+
+  //! @brief Expose the human who is currently engaged by the robot.
+  //! This human may have been engaged by a EngageHuman action or by the BasicAwareness
+  //! autonomous ability.
+  //! @observable
+  //! @since 2
+  prop engagedHuman(engagedHuman: qi.human.Human)
+
+  //! @brief Expose the human with whom the robot should start the interaction.
+  //! The conditions are based on the engagement intention state of each human as well as their
+  //! location relative to the robot.
+  //! @observable
+  //! @since 3
+  prop recommendedHumanToEngage(recommendedHumanToEngage: qi.human.Human)
+end

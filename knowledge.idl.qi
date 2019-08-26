@@ -1,0 +1,357 @@
+package qi.knowledge
+
+import qi.context
+import qi.locale
+
+//! @brief Struct representing a node. A Node holds an Object which can be
+//! a ResourceNode or a LiteralNode. Every node other than ResourceNode are
+//! considered as literal. Literal nodes can handle the following types:
+//! <ul>
+//! <li> str,
+//! <li> LocalizedString,
+//! <li> float,
+//! <li> int,
+//! <li> TimeString,
+//! <li> DateTimeString,
+//! <li> DateString.
+//! </ul>
+//! @since 2
+struct Node
+  value: any
+end
+
+//! @brief Struct representing a resource node which has a unique URL among the triple database.
+//! @since 2
+struct ResourceNode
+  url: str
+end
+
+//! @brief Struct representing a string with a language.
+//! @since 2
+struct LocalizedString
+  string: str
+  locale: qi.locale.Locale
+end
+
+//! @brief Struct representing a triple.
+//! Subject and predicate are always resources, the object can be a resource or
+//! a literal (here encapsulated in a Node).
+//! @since 2
+struct Triple
+  subject: ResourceNode
+  predicate: ResourceNode
+  object: Node
+end
+
+//! @brief Struct representing a dateTime as a string.
+//! @since 2
+struct DateTimeString
+  //! The string should be in the format yyyy-MM-ddThh:mm:ssZ, in order to be used
+  //! to create nodes and triples.
+  dateTimeString: str
+end
+
+//! @brief Struct representing a date as a string.
+//! @since 2
+struct DateString
+  //! The string should be in the format yyyy-MM-dd, in order to be used
+  //! to create nodes and triples.
+  dateString: str
+end
+
+//! @brief Struct representing a dateString as string.
+//! @since 2
+struct TimeString
+  //! The string should be in the format hh:mm:ssZ, in order to be used
+  //! to create nodes and triples.
+  timeString: str
+end
+
+//! @brief Object allowing to edit a named graph.
+//! @since 2
+interface EditableKnowledgeGraph
+  //! @brief Add a triple to the triplestore.
+  //! @param triple The triple to add to the triplestore.
+  //! @throw if one node of the triple is invalid.
+  //! @throw if the triple is partial (at least one node is empty).
+  //! @since 2
+  fn add(triple: Triple)
+
+  //! @brief Remove all the triples matching the given triple from the triplestore.
+  //! @param triple The triple to remove from triplestore.
+  //! @throw if one node of the triple is invalid.
+  //! @since 2
+  fn remove(triple: Triple)
+
+  //! @brief The name of the graph edited by this EditableKnowedgeGraph.
+  //! @since 2
+  prop graphName(graphName: str)
+
+  //! @brief Represent whether the timestamp will be automatically added to each triple or not.
+  //! @mutable
+  //! @since 2
+  prop timestampEnabled(isTimestampEnabled: bool)
+
+end
+
+interface KnowledgeSubscriber
+
+  //! @brief When a triple is added or removed the signal tripleAdded and
+  //! tripleRemoved respectively will be emitted if it is matched by the tripleQuery.
+  //! @mutable
+  //! @since 2
+  prop triple(triple: Triple)
+
+  //! @brief The name of the graph the subscriber is watching to emit the signal
+  //! tripleAdded.
+  //! @mutable
+  //! @since 2
+  prop graphName(graphName: str)
+
+  //! @brief Signal emitted when a triple matching the tripleQuery property is
+  //! added in the graph named graphName.
+  //! @since 2
+  sig tripleAdded(tripleAdded: Triple)
+
+  //! @brief Signal emitted when a triple matching the tripleQuery property is
+  //! removed in the graph named graphName.
+  //! @since 2
+  sig tripleRemoved(tripleRemoved: Triple)
+end
+
+//! @brief Object allowing to read data from given named graphs.
+//! @since 2
+interface KnowledgeBase
+
+  //! @brief Check whether or not there exist at least one triple matching a query.
+  //! tripleQuery The query which should be match by at least one triple.
+  //! @param graphName The name of the graph in which you want to check the presence of the triple.
+  //! @return True if at least one triple is found.
+  //! @throw if any node of the triple is not valid.
+  //! @since 2
+  fn contains(triple: Triple, graphName: str) -> bool
+
+  //! @brief Search for the Objects of triples matching the pattern
+  //! subject-predicate.
+  //! @param subject The subject to be matched, can be a wildcard.
+  //! @param predicate The predicate to be matched, can be a wildcard.
+  //! @param graphName The name of the graph on which you want to do the query
+  //! @return A vector of subjects (which are string).
+  //! @throw if the subject or predicate is invalid.
+  //! @since 2
+  fn queryObjects(subject: ResourceNode, predicate: ResourceNode, graphName: str) -> Vec<Node>
+
+  //! @brief Search for the Objects of triples matching the pattern
+  //! subject-predicate.
+  //! @param subject The subject to be matched, can be a wildcard.
+  //! @param predicate The predicate to be matched, can be a wildcard.
+  //! @param graphName The name of the graph on which you want to do the query
+  //! @return A vector of subjects (which are string).
+  //! @throw if the subject, predicate or locale is invalid.
+  //! @since 2
+  fn queryLocalizedObjects(subject: ResourceNode, predicate: ResourceNode, language: qi.locale.Locale, graphName: str) -> Vec<Node>
+
+  //! @brief Search for the predicates of triples matching the pattern
+  //! subject-Object.
+  //! @param subject The subject to be matched, can be a wildcard.
+  //! @param Object The Object to be matched, can be a wildcard.
+  //! @param graphName The name of the graph on which you want to do the query
+  //! @return A vector of subjects (which are strings).
+  //! @throw if the subject or object is invalid.
+  //! @since 2
+  fn queryPredicates(subject: ResourceNode, Object: Node, graphName: str) -> Vec<ResourceNode>
+
+  //! @brief Search for the subjects of triples matching the pattern
+  //! predicate-Object.
+  //! @param predicate The predicate to be matched, can be a wildcard.
+  //! @param Object The Object to be matched, can be a wildcard.
+  //! @param graphName The name of the graph on which you want to do the query.
+  //! @return A vector of subjects (which are strings).
+  //! @throw if the object or predicate is invalid.
+  //! @since 2
+  fn querySubjects(predicate: ResourceNode, Object: Node, graphName: str) -> Vec<ResourceNode>
+
+  //! @brief Find all the triples matching the triple.
+  //! @param triple A triple which can be partial, and which should be matched
+  //!by all the resulting triple.
+  //! @return The vector of triples matching the triple
+  //! @throw if one node of the triple is invalid.
+  //! @since 2
+  fn queryTriples(triple: Triple, graphName: str) -> Vec<Triple>
+
+  //! @brief Each node of a triple is linked to a single unique node, called meta node.
+  //! This function returns The meta node of all triples matching a query.
+  //! You can use the name of the meta node to add and read data about a triple by calling
+  //! the functions such add, remove, query.
+  //! Example: add(^queryMeta(user1, eat, pizza), mood, happy)
+  //! @throw if one node of the triple is invalid.
+  //! @param triple The triple from which you want the meta node.
+  fn queryMetaNode(triple: Triple, graphName: str) -> ResourceNode
+
+  //! @brief Return The triple corresponding to the given meta node.
+  fn queryTripleFromMetaNode(meta: ResourceNode, graphName: str) -> Triple
+
+  //! @brief Create a knowledgeSubscriber which emit a signal each time
+  //! a triple matching the Triple is added or removed in the graph named graphName.
+  //! @param triple A triple, which can be partial and should be match in order
+  //! to trigger the signals tripleAdded(when a triple is added to the given graph)
+  //!and tripleRemoved(when a triple is removed from the given graph).
+  //! @param graphName The graph which is spied by this subscriber.
+  //! @return The created knowledge subscriber.
+  //! @throw if one node of the triple is invalid.
+  //! @since 2
+  fn subscribe(triple: Triple, graphName: str) -> KnowledgeSubscriber
+
+end
+
+//!@brief Service handling the shared knowledge.
+//! @since 2
+interface Knowledge
+
+  //! @brief Allow getting the KnowledgeBase which can be used to access the shared knowledge.
+  //! @return A KnowledgeBase.
+  //! @since 2
+  fn knowledgeBase() -> KnowledgeBase
+
+  //! @brief Create an editableKnowledgeGraph which allows writing in a determined graph.
+  //! Anyone getting an edittabledKnowledgeGraph this way will be able to read an overwrite the data.
+  //! @param context Context which is used to identify the client and the name of the graph editable
+  //! by this editableKnowledgeGraph.
+  //! @return An editableKnowlwedge graph.
+  //! @since 2
+  fn editableKnowledgeGraph(context: qi.context.Context) -> EditableKnowledgeGraph
+
+  //! @brief Create a unique URL of the form http://softbank.org/sharedKnowledge#<Uuid>
+  //! Example: http://softbank.org/sharedKnowledge#a3ef186-0c7k-ic02-52zu-0pj6bs1k92a5
+  //! @return A string representing a unique URL which can be used to create a resourceNode.
+  fn makeUniqueUrl() -> str
+
+  //! @brief Try to create a URL using a string.
+  //! @param name string.
+  //! @return a string representing a URL. If no URL can be created using.
+  //! @throw if the string is empty.
+  //! @throw if the string doesn't allow to create a valid URL.
+  //! @return The created URL.
+  fn makeUrlFromName(name: str) -> str
+
+  //! @brief Create a resourceNode using the given URL.
+  //! @param url a string which should be a valid a URL.
+  //! @throw if the URL is not valid.
+  //! @return a valid ResourceNode.
+  fn makeResourceNodeFromUrl(url: str) -> ResourceNode
+
+  //! @brief Create a resource node using a string
+  //! the method will use the method makeUrlFromName in order to create a URL.
+  //! @throw if the string doesn't allow to create a valid URL.
+  //! @return A valid ResourceNode.
+  fn makeResourceNodeFromName(name: str) -> ResourceNode
+
+  //! @brief Create a resource node with a unique URL using the method
+  //! makeUniqueUrl.
+  //! return A unique valid ResourceNode.
+  fn makeUniqueResourceNode() -> ResourceNode
+
+  //! @brief Create an empty resource node which is considered as an empty node
+  //! or a wildcard withing triples.
+  //! @return an empty ResourceNode.
+  fn makeEmptyResourceNode() -> ResourceNode
+
+  //! @brief Create an empty Node which is considered as an empty node
+  //! or a wildcard withing triples.
+  //! @return an empty Node.
+  fn makeEmptyNode() -> Node
+
+  //! @brief Create an Node encapsulating a localizedString.
+  //! @param string A string.
+  //! @param language The locale of the string.
+  //! @throw If the local is not valid.
+  //! @return An Node encapsulating the given localizedString.
+  fn makeLocalizedStringNode(string: str, language: qi.locale.Locale) -> Node
+
+  //! @brief Create an Node encapsulating the given string.
+  //! @param literalString A string.
+  //! @return An Node encapsulating the given string.
+  fn makeStringNode(literalString: str) -> Node
+
+  //! @brief Create an Node encapsulating the given int.
+  //! @param literalInt An int.
+  //! @return An Node encapsulating the given int.
+  fn makeIntNode(literalInt: int) -> Node
+
+  //! @brief Create an Node encapsulating the given float.
+  //! @param literalFloat A float.
+  //! @return An Node encapsulating the given float.
+  fn makeFloatNode(literalFloat: float) -> Node
+
+  //! @brief Create an Node encapsulating the given string.
+  //! @param A string representing a dateTime in the yyyy-MM-ddThh:mm:ssZ format.
+  //! @throw  If the string is not in the format yyyy-MM-ddThh:mm:ssZ.
+  //! @return An anyvalue encapsulating the given string.
+  fn makeDateTimeNode(literalDateTime: str) -> Node
+
+  //! @brief Create an Node encapsulating the given string.
+  //! @param literalDate A string representing a date in the yyyy-MM-dd format.
+  //! @throw If the string is not in the yyyy-MM-dd format.
+  //! @return An anyvalue encapsulating the given string.
+  fn makeDateNode(literalDate: str) -> Node
+
+  //! @brief Create an Node encapsulating the given string.
+  //! @param literaTime A string representing a time in the hh:mm:ss format.
+  //! @throw If the string is not in the hh:mm:ss format.
+  //! @return An Node encapsulating the given string.
+  fn makeTimeNode(literaTime: str) -> Node
+
+  //! @brief Create a Node encapsulating the given ResourceNode.
+  //! This is useful when you already created a ResourceNode and need to use it
+  //! as the object of triple, in a request for instance, or just to create a triple.
+  //! @param resourceNode A ResourceNode.
+  //! @return A Node encapsulating the given ResourceNode.
+  fn makeNodeFromResourceNode(resourceNode: ResourceNode) -> Node
+
+  //! @brief Create a triple from which every node is a ResourceNode created
+  //! with the method makeResourceNodeFromName.
+  //! @param subjectName A string used to create a valid ResourceNode, subject of the created triple.
+  //! @param predicateName A string used to create a valid ResourceNode, predicate of the created triple.
+  //! @param objectName A string used to create a valid ResourceNode, object of the created triple.
+  //! @return The created triple.
+  //! @throw If one of the nodes is invalid.
+  fn makeResourceTripleFromNames(subjectName: str, predicateName: str, objectName: str) -> Triple
+
+  //! @brief Create a triple which every node is a ResourceNode created with the
+  //! method makeResourceNodeFromName.
+  //! @param subjectName A string used to create a valid ResourceNode, subject of the created triple.
+  //! @param predicateName A string used to create a valid ResourceNode, predicate of the created triple.
+  //! @param object Node which will be the object of the created triple.
+  //! @return The created triple.
+  //! @throw If one of the nodes is invalid.
+  fn makeTripleFromNames(subjectName: str, predicateName: str, object: Node) -> Triple
+
+  //! @brief Create a triple which subject and predicate are ResourceNode created with the
+  //! method makeResourceNodeFromName and object the object given as last parameter.
+  //! @param subject A ResourceNode which will be the subject of the created triple.
+  //! @param predicate A ResourceNode which will be the predicate of the created triple.
+  //! @param object Node which will be the object of the created triple.
+  //! @return The created triple.
+  //! @throw If one of the nodes is invalid.
+  fn makeTripleFromNodes(subject: ResourceNode, predicate: ResourceNode, object: Node) -> Triple
+
+  //! @brief Check if a triple matches another triple.
+  //! @param tripleToMatch A triple which should be matched.
+  //! @param otherTriple A triple which can match or not the other triple.
+  //! @return True if the second triple matches the first one.
+  //! Be aware that if tripleA matches tripleB, it doesn't mean that tripleB matches tripleA.
+  fn matchTriple(tripleToMatch: Triple, otherTriple: Triple) -> bool
+
+  //! @brief Check if a triple is partial or not.
+  //! @param triple The triple to check.
+  //! @return True if the triple is partial, not otherwise.
+  fn isTriplePartial(triple: Triple) -> bool
+
+  //! Check whether a node is empty or not.
+  fn isNodeEmpty(node: Node) -> bool
+
+  //! Check whether a node is valid or not.
+  //! @throw if the node is not valid.
+  fn isNodeValid(node: Node) -> bool
+
+end

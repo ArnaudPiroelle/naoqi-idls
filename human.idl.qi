@@ -1,0 +1,196 @@
+package qi.human
+
+from qi.actuation import Frame
+from qi.image import TimestampedImage
+
+//! @brief Enum containing the possible states reached on the
+//! pleasure-displeasure scale.
+//! @since 1
+enum PleasureState
+    //! @brief The pleasure state is not observable by the robot.
+    //! @since 1
+    const Unknown = 0
+    //! @brief The human shows a predominant negative affective state.
+    //! @since 1
+    const Negative = 1
+    //! @brief The human shows a neutral affective state.
+    //! @since 1
+    const Neutral = 2
+    //! @brief The human shows a predominant positive affective state.
+    //! @since 1
+    const Positive = 3
+end
+
+//! @brief Enum containing the perceived energy in the emotion.
+//! @since 1
+enum ExcitementState
+    //! @brief The excitement state is not observable by the robot.
+    //! @since 1
+    const Unknown = 0
+    //! @brief The human is displaying a low energy state,
+    //! i.e. quiet voice and slow movements.
+    //! @since 1
+    const Calm = 1
+    //! @brief The human is displaying a high energy state,
+    //! i.e. loud voice and brisk movements.
+    //! @since 1
+    const Excited = 2
+end
+
+//! @brief Enum containing the engagement intention of the human toward the robot, as perceived.
+//! @since 3
+enum EngagementIntentionState
+    //! @brief The engagement intention is not observable by the robot.
+    //! @since 3
+    const Unknown = 0
+    //! @brief The human does not seem to be interested in engaging an interaction with the robot.
+    //! The human may just be passing by, not paying attention to the robot.
+    //! @since 3
+    const NotInterested = 1
+    //! @brief The human seems to be interested by the robot but will not engage the interaction proactively.
+    //! The human is looking at the robot while passing by or standing outside interaction distance.
+    //! @since 3
+    const Interested = 2
+    //! @brief The human is proactively looking for an interaction with the robot.
+    //! The human is approaching the robot and facing him within an interaction distance.
+    //! @since 3
+    const SeekingEngagement = 3
+end
+
+//! @brief Enum containing the possible attention states of the human when interacting
+//! with the robot.
+//! @brief States are defined based on where the human is looking, the frame of reference is the human.
+//! @since 2
+enum AttentionState
+    //! @brief The attention state is not observable by the robot.
+    //! @since 1
+    const Unknown = 0
+    //! @brief The human maintains eye contact with the robot and is attentive.
+    //! @since 2
+    const LookingAtRobot = 1
+    //! @brief The human doesn't maintain eye contact and looks up.
+    //! @since 2
+    const LookingUp = 2
+    //! @brief The human doesn't maintain eye contact and looks down.
+    //! @since 2
+    const LookingDown = 3
+    //! @brief The human doesn't maintain eye contact and looks to the left.
+    //! @since 2
+    const LookingLeft = 4
+    //! @brief The human doesn't maintain eye contact and looks to the right.
+    //! @since 2
+    const LookingRight = 5
+    //! @brief The human doesn't maintain eye contact and looks at the top left.
+    //! @since 2
+    const LookingUpLeft = 6
+    //! @brief The human doesn't maintain eye contact and looks at the top right.
+    //! @since 2
+    const LookingUpRight = 7
+    //! @brief The human doesn't maintain eye contact and looks down left.
+    //! @since 2
+    const LookingDownLeft = 8
+    //! @brief The human doesn't maintain eye contact and looks down right.
+    //! @since 2
+    const LookingDownRight = 9
+end
+
+//! @brief Enum containing the possible smiling states of the human.
+//! This feature is only based on facial expression.
+//! @since 1
+enum SmileState
+    //! @brief The smile state is not observable by the robot.
+    //! @since 1
+    const Unknown = 0
+    //! @brief The human is not smiling.
+    //! @since 1
+    const NotSmiling = 1
+    //! @brief The human has a smile.
+    //! @since 1
+    const Smiling = 2
+    //! @brief The human has a broad smile.
+    //! @since 1
+    const BroadlySmiling = 3
+end
+
+//! @brief Structure containing expression data computed from human's face.
+//! @since 1
+struct FacialExpressions
+    //! @brief The smile expression.
+    //! @since 1
+    smile: SmileState
+end
+
+//! @brief Object containing the emotional state properties.
+//! It is a three-dimensional representation of the emotional state,
+//! based on the PAD model of Albert Mehrabian.
+//! See: Mehrabian, Albert (1980). Basic dimensions for a general psychological theory.
+//! @since 1
+interface Emotion
+    //! @brief Expose the pleasure property
+    //! @observable
+    //! @since 1
+    prop pleasure(pleasureState: PleasureState)
+    //! @brief Expose the excitement property
+    //! @observable
+    //! @since 1
+    prop excitement(excitementState: ExcitementState)
+end
+
+//! @brief Structure representing an age.
+//! @since 1
+struct Age
+    //! @brief The number of years.
+    //! @since 1
+    years: int
+end
+
+//! @brief Enum containing different genders of a human.
+//! @since 1
+enum Gender
+    //! @brief The gender is not observable by the robot.
+    //! @since 1
+    const Unknown = 0
+    //! @brief Female gender.
+    //! @since 1
+    const Female = 1
+    //! @brief Male gender.
+    //! @since 1
+    const Male = 2
+end
+
+//! @brief Object representing a physical person detected by the robot.
+//! @since 1
+interface Human
+  //! @brief Expose the head frame.
+  //! @since 1
+  prop headFrame(headFrame: qi.actuation.Frame)
+
+  //! @brief Expose the emotion of the human.
+  //! @since 1
+  prop emotion(emotion: Emotion)
+
+  //! @brief Expose the engagement intention state of the human.
+  //! @observable
+  //! @since 3
+  prop engagementIntention(engagementIntention: EngagementIntentionState)
+  //! @brief Expose the facial expressions of the human.
+  //! @observable
+  //! @since 1
+  prop facialExpressions(facialExp: FacialExpressions)
+  //! @brief Expose the attention of the human.
+  //! @observable
+  //! @since 1
+  prop attention(attention: AttentionState)
+  //! @brief Expose the age of the human.
+  //! @observable
+  //! @since 1
+  prop estimatedAge(age: Age)
+  //! @brief Expose the gender of the human.
+  //! @observable
+  //! @since 1
+  prop estimatedGender(gen: Gender)
+  //! @brief Latest detected face picture.
+  //! @observable
+  //! @since 3
+  prop facePicture(facePicture: TimestampedImage)
+end

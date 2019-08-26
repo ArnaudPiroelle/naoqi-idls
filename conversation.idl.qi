@@ -1,0 +1,1029 @@
+package qi.conversation
+
+import qi.context
+import qi.locale
+
+//! Structure containing a chunk of text intended to be said or listened by the robot.
+//! @since 1
+struct Phrase
+  //! Chunk of text intended to be said or listened by the robot.
+  //! @since 1
+  text: str
+end
+
+//! Object representing a set of phrases.
+//! Used to regroup phrases considered as synonyms.
+//! Example: \"yes\", \"yep\", \"indeed\", ...
+//! @since 1
+interface PhraseSet
+   //! Return the phrases of the PhraseSet.
+   //! @return A list of phrases.
+   //! @since 1
+   fn getPhrases() -> Vec<Phrase>
+end
+
+//! A container of Phrases that can be edited.
+//! @since 1
+interface EditablePhraseSet
+  //! Add the given Phrases to the EditablePhraseSet.
+  //! If a Phrase is already in the EditablePhraseSet, it will not be added a second time.
+  //! This updates the phrases property.
+  //! @param newPhrases The list of Phrases to add
+  //! @since 1
+  fn addPhrases(newPhrases: Vec<Phrase>)
+
+  //! Remove the given Phrases from the EditablePhraseSet.
+  //! If a phrase is not present in the EditablePhraseSet, it will be ignored.
+  //! This updates the phrases property.
+  //! @param phrasesToRemove The list of Phrases to remove.
+  //! @since 1
+  fn removePhrases(phrasesToRemove: Vec<Phrase>)
+
+  //! Exposes the list of unique Phrases in the EditablePhraseSet.
+  //! This is modified when using addPhrases() or removePhrases().
+  //! @observable
+  //! @since 1
+  prop phrases(phrases: Vec<Phrase>)
+end
+
+//! The heard phrase along with the matching phrase set.
+//! @since 1
+struct ListenResult
+   //! The matching phrase set.
+   //! @since 1
+   matchedPhraseSet: PhraseSet
+   //! The heard Phrase.
+   //! @since 1
+   heardPhrase: Phrase
+end
+
+//! Body language policy.
+//! @since 1
+enum BodyLanguageOption
+  //! The robot will not move.
+  //! @since 1
+  const Disabled = 0
+  //! The robot will automatically animate himself accordingly to the action.
+  //! @since 1
+  const Neutral = 1
+end
+
+//! Action to make the robot say a phrase.
+//! @since 1
+interface Say
+  //! Say the phrase.
+  //! @since 1
+  fn run()
+
+  //! Notify when the robot starts to talk.
+  //! It is raised when the robot successfully began to talk.
+  //! @since 1
+  sig started()
+end
+
+//! Action to make the robot listen to and recognize a specific set of phrases pronounced by a user.
+//! On recognition success, a ListenResult gives the heard phrase and the matching PhraseSet.
+//! @since 1
+interface Listen
+  //! Make the robot listen for the specific phraseSet.
+  //! When a phrase from the phrase sets is recognized, the resulting future finishes with a ListenResult.
+  //! @return A future finishing when the robot recognized a phrase from a phrase set.
+  //! @since 1
+  fn run() -> ListenResult
+
+  //! Notify when the robot starts to listen.
+  //! It is raised when the robot successfully began to listen.
+  //! @since 1
+  sig started()
+end
+
+
+//! Object representing a topic.
+//! @since 1
+interface Topic
+  //! The name of the topic
+  //! @since 1
+  prop name(topicName: str)
+
+  //! Exposes a map of the Bookmarks in this topic
+  //! The keys of this map are the names of the Bookmarks
+  //! The values of this map are the Bookmarks themselves
+  //! @since 1
+  prop bookmarks(bookmarks: Map<str,Bookmark>)
+
+  //! The raw content of the topic
+  //! @since 1
+  prop content(content: str)
+end
+
+//! The current state of a topic in a Discuss Action
+//! @since 1
+interface TopicStatus
+  //! Exposes the Topic being observed
+  //! @since 1
+  prop topic(topic: Topic)
+
+  //! Indicates the current activation status of the topic
+  //! Modifying this will enable / disable the Topic.
+  //! @observable
+  //! @mutable
+  //! @since 1
+  prop enabled(enabled: bool)
+
+  //! Indicates if this topic currently has the focus
+  //! @observable
+  //! @since 1
+  prop focused(focused: bool)
+end
+
+//! Object representing a variable in a QiChat topic.
+//! @since 1
+interface QiChatVariable
+  //! Exposes the name of the variable
+  //! @since 1
+  prop name(varName: str)
+
+  //! Exposes the value of the variable
+  //! This can be updated by the user to modify the value of the variable in QiChat
+  //! This can also be modified from QiChat
+  //! @observable
+  //! @mutable
+  //! @since 1
+  prop value(currentValue: str)
+end
+
+//! Object representing a marked location in a topic.
+//! @since 1
+interface Bookmark
+  //! Exposes the name of the Bookmark
+  //! @since 1
+  prop name(name: str)
+
+  //! Exposes the topic in which this instance of the Bookmark can be found
+  //! @since 1
+  prop topic(topic: Topic)
+end
+
+//! Object representing the state of a Bookmark during Discuss execution.
+//! @since 1
+interface BookmarkStatus
+  //! Exposes the Bookmark being observed
+  //! @since 1
+  prop bookmark(bookmark: Bookmark)
+
+  //! Emitted every time the Bookmark is reached during the discussion.
+  //! @since 1
+  sig reached()
+
+  //! Indicates the current activation status of the rules at this Bookmark (read/write).
+  //! Modifying this will enable / disable the Bookmark.
+  //! This will also be modified when the state of the Bookmark is modified from QiChat.
+  //! @observable
+  //! @mutable
+  //! @since 1
+  prop enabled(enabled: bool)
+end
+
+//! Action to make the robot able to converse with a human using content from QiChat topics.
+//! @since 1
+//! @deprecated Since API level 3. Please use {@link QiChatbot} with {@link Chat} instead.
+interface Discuss
+  //! Start the discussion
+  //! The robot starts to listen, react and talk using the content of the loaded topics
+  //! If the robot is in a language different from the action language, the robot language will be changed.
+  //! @return Parameter of the ^endDiscuss() command that was matched in the topics
+  //! @throws A Say action is already running
+  //! @throws A Listen action is already running
+  //! @throws Another Discuss action is already running
+  //! @throws This Discuss action is already running
+  //! @since 1
+  fn run() -> str
+
+  //! Get the content of the concept with the given name that can be converted to a string
+  //! This works with both static and dynamic concepts. (For a primer on static and dynamic concepts, please refer to the QiChat documentation)
+  //! @param conceptName The name of the concept
+  //! @return The content of the concept as a PhraseSet. Content that cannot be converted to a Phrase will be ignored
+  //! @throws There is no concept named conceptName
+  //! @since 1
+  fn concept(conceptName: str) -> PhraseSet
+
+  //! Retrieve the dynamic concept with the given name
+  //! This works only with dynamic concepts. (For a primer on static and dynamic concepts, please refer to the QiChat documentation)
+  //! @param conceptName The name of the concept we want to work on
+  //! @return An EditablePhraseSet to access / modify the content of the dynamic concept
+  //! @throws There is no concept named conceptName
+  //! @throws There is no concept dynamic concept named conceptName
+  //! @since 1
+  fn dynamicConcept(conceptName: str) -> EditablePhraseSet
+
+  //! Make the robot execute the interaction at the given Bookmark, only if the Bookmark can be emitted.
+  //! @param bookmark The Bookmark to go to
+  //! @throws The given Bookmark does not belong to a topic from this action
+  //! @throws No output containing this Bookmark can be instantiated (contain empty variable, disabled bookmarks...)
+  //! @throws No output containing this Bookmark that can be instantiated would emit said Bookmark
+  //! @since 1
+  fn goToBookmarkedOutputUtteranceIfBookmarkIsReachable(bookmark: Bookmark)
+
+  //! Make the robot execute the interaction at the given Bookmark, regardless of whether the Bookmark would be emitted
+  //! @param bookmark The Bookmark to go to
+  //! @return Whether the Bookmark is emitted
+  //! @throws The given Bookmark does not belong to a topic from this action
+  //! @throws No output containing this bookmark can be instantiated (contain empty variable, disabled bookmarks...)
+  //! @since 1
+  fn goToBookmarkedOutputUtterance(bookmark: Bookmark) -> bool
+
+  //! Obtain an object to observe and act on the given state of Bookmark during the action execution.
+  //! @param bookmark The Bookmark to observe / act on
+  //! @return An object allowing to observe / modify the runtime properties of the Bookmark.
+  //! @throws The given Bookmark does not belong to a topic from this Discuss action
+  //! @since 1
+  fn bookmarkStatus(bookmark: Bookmark) -> BookmarkStatus
+
+  //! Obtain an object to observe and act on the given state of a Topic during the action execution.
+  //! @param topic The Topic to observe / act on
+  //! @return An object allowing to observe / modify the runtime properties of the Topic.
+  //! @throws The given Topic does not belong to this Discuss action
+  //! @since 1
+  fn topicStatus(topic: Topic) -> TopicStatus
+
+  //! Obtain access to the variable with the given name
+  //! @param varName The name of the variable we want to get
+  //! @return an object representing the variable
+  //! @throws There is no variable named varName in any of the Topics of this action
+  //! @since 1
+  fn variable(varName: str) -> QiChatVariable
+
+  //! Obtain a list of possible human utterances for this running Discuss action as whole
+  //! @return The list of possible utterances
+  //! @throws When the action is not running
+  //! @since 2
+  fn globalRecommendations() -> PhraseSet
+
+  //! Obtain a list of possible human utterances for the current scope of this running Discuss action
+  //! @return The list of possible utterances
+  //! @throws When the action is not running
+  //! @since 2
+  fn scopeRecommendations() -> PhraseSet
+
+  //! Obtain a list of possible human utterances for the currently focused topic of this running Discuss action
+  //! @return The list of possible utterances
+  //! @throws When the action is not running
+  //! @since 2
+  fn focusedTopicRecommendations() -> PhraseSet
+
+  //! Exposes a vector of the Topics in this action
+  //! @since 1
+  prop topics(topics: Vec<Topic>)
+
+  //! Exposes the latest spoken output sentence
+  //! This is modified when the robot speaks
+  //! @observable
+  //! @since 1
+  prop latestOutputUtterance(output: Phrase)
+
+  //! Exposes the latest spoken input sentence
+  //! This is modified when the robot hears something
+  //! @observable
+  //! @since 1
+  prop latestInputUtterance(input: Phrase)
+
+  //! Exposes the topic that is currently focused
+  //! This is modified when the current topic changes during the conversation with the robot
+  //! e.g. when the user input matches a rule in another topic,
+  //! or when going to a Bookmark from a topic different from the current one
+  //! @param topic The new current topic
+  //! @observable
+  //! @since 1
+  prop focusedTopic(topic: Topic)
+
+  //! Indicates whether the Discuss action is currently listening (e.g. the user can speak)
+  //! @observable
+  //! @since 2
+  prop listening(listening: bool)
+
+  //! Emitted when the Discuss action starts
+  //! @since 1
+  sig started()
+
+  //! Emitted when a Bookmark is reached
+  //! @since 1
+  sig bookmarkReached(bookmark: Bookmark)
+
+  //! The Phrase which is currently said by the robot
+  //! This value is set to a Phrase with an empty 'text' field when the robot finishes saying the Phrase.
+  //! @since 3
+  //! @observable
+  prop saying(sayingPhrase: Phrase)
+
+  //! Exposes whether the robot is currently hearing speech
+  //! @observable
+  //! @since 3
+  prop hearing(hearing: bool)
+
+  //! The Phrase heard, emitted once the robot has heard a valid Phrase.
+  //! @since 3
+  sig heard(heardPhrase: Phrase)
+
+  //! Emitted when the robot has heard speech, but cannot determine the content of the Phrase said.
+  //! @since 3
+  sig noPhraseRecognized()
+
+  //! Emitted when a phrase was heard and the robot can provide an answer.
+  //! @since 3
+  sig normalReplyFoundFor(input: Phrase)
+
+  //! Emitted when a phrase was heard but the robot answer provided is of "poor" quality
+  //! (belongs to the "Not Understood" category, for example coming from a ^fallback topic,
+  //! matching e:Dialog/NotUnderstood ou e:Dialog/SpeakFailure...)
+  //! @since 3
+  sig fallbackReplyFoundFor(input: Phrase)
+
+  //! Emitted when no answer was found to the input sentence.
+  //! @since 3
+  sig noReplyFoundFor(input: Phrase)
+end
+
+//! Factory to create Say actions
+//! @since 3
+interface SpeechEngine
+  //! Create a say action.
+  //! @param phrase The phrase to say.
+  //! @return A say action.
+  //! @since 3
+  fn makeSay(phrase: Phrase) -> Say
+
+  //! Create a say action.
+  //! @param phrase The phrase to say.
+  //! @param bodyLanguageOption The body language policy to apply.
+  //! \"neutral\" policy: the robot chooses animations to perform accordingly to the spoken words and the syntactic structure of the phrase.
+  //! @return A say action.
+  //! @since 3
+  fn makeSay(phrase: Phrase,
+             bodyLanguageOption: BodyLanguageOption) -> Say
+
+  //! Create a say action.
+  //! @param phrase The phrase to say.
+  //! @param bodyLanguageOption The body language policy to apply.
+  //! \"neutral\" policy: the robot chooses animations to perform accordingly to the spoken words and the syntactic structure of the phrase.
+  //! @param locale The locale to be used to say the text.
+  //! @return A say action.
+  //! @since 3
+  fn makeSay(phrase: Phrase,
+             bodyLanguageOption: BodyLanguageOption,
+             locale: qi.locale.Locale) -> Say
+
+  //! The Phrase said by a Say action from this factory while it is running.
+  //! This value is set when a Say action from this factory starts running
+  //! and set to an empty Phrase when the action stops.
+  //! @since 3
+  //! @observable
+  prop saying(phrase: Phrase)
+end
+
+//! Describes the current status of a ChatbotReaction (in a Chat action for example)
+//! @since 3
+enum ChatbotReactionHandlingStatus
+  //! The ChatbotReaction has not been handled yet (by a Chat action for example)
+  //! @since 3
+  const NotHandled = 0
+
+  //! The ChatbotReaction has been handled (ex: enqueued in a Chat)
+  //! @since 3
+  const Handled = 1
+
+  //! The ChatbotReaction has been rejected (ex: a Reply with a Higher ReplyPriority was picked,
+  //! or a Reply from another chatbot couldn't be interrupted)
+  //! @since 3
+  const Rejected = 2
+end
+
+//! Action produced by a Chatbot either as a reply to a Phrase, or spontaneously
+//! @since 3
+interface ChatbotReaction
+  //! Run the action defined by a chatbot.
+  //! @param SpeechEngine A factory that produces Say actions to be run() by this Reply
+  //! @since 3
+  fn runWith(speechEngine: SpeechEngine)
+
+  //! Stop the execution
+  //! @throws The ChatbotReaction is not being executed
+  //! @since 3
+  fn stop()
+
+  //! The current handling status of the ChatReaction
+  //! @param updateStatus The newer status
+  //! @mutable
+  //! @observable
+  //! @since 3
+  prop chatbotReactionHandlingStatus(updateStatus: ChatbotReactionHandlingStatus)
+end
+
+//! Additional information on the Priority of a Chatbot Reply
+//! @since 3
+enum ReplyPriority
+  //! The answer is satisfying for the input Phrase.
+  //! @since 3
+  const Normal = 0
+
+  //! The Reply does not answer the input Phrase.
+  //! @since 3
+  const Fallback = 1
+end
+
+//! A Chatbot reaction to a human utterance
+//! @since 3
+interface ReplyReaction
+  //! The reaction of the Chatbot
+  //! @since 3
+  prop chatbotReaction(chatbotReaction: ChatbotReaction)
+
+  //! Represents the estimated priority of this reply.
+  //! @since 3
+  prop replyPriority(replyPriority: ReplyPriority)
+end
+
+//! Additional information on the importance of a suggested ChatbotReaction
+//! @since 3
+enum AutonomousReactionImportance
+  //! The AutonomousReaction importance is supposed high (will try to interrupt)
+  //! @since 3
+  const High = 0
+
+  //! The AutonomousReaction importance is supposed low (will NOT try to interrupt)
+  //! @since 3
+  const Low = 1
+end
+
+//! Decribes the validity of a suggested ChatbotReaction
+enum AutonomousReactionValidity
+  //! The AutonomousReaction Validity is Immediate (will be discarded if it can't be run immediately)
+  //! @since 3
+  const Immediate = 0
+
+  //! The AutonomousReaction Validity is Delayable (will be enqueued if it can't be run immediately)
+  //! @since 3
+  const Delayable = 1
+end
+
+//! A reaction Suggested by a Chatbot
+//! @since 3
+interface AutonomousReaction
+  //! The reaction of the Chatbot
+  //! @since 3
+  prop chatbotReaction(chatbotReaction: ChatbotReaction)
+
+  //! The importance of this AutonomousReaction
+  //! @since 3
+  prop importance(importance: AutonomousReactionImportance)
+
+  //! The validity of this AutonomousReaction
+  //! @since 3
+  prop validity(validity: AutonomousReactionValidity)
+end
+
+//! Object representing a Chatbot that can react in response to Phrases.
+//! @since 3
+interface Chatbot
+  //! Produce a ReplyReaction based on a given input phrase.
+  //! This phrase may be empty if the robot was not able to make out what was being said.
+  //! @param phrase The input Phrase from the user
+  //! @param locale The Locale of the given Phrase
+  //! @return A ReplyReaction corresponding to the given input Phrase
+  //! @throws The Chatbot has no answer at all for the given Phrase
+  //! @since 3
+  fn replyTo(phrase: Phrase, locale: qi.locale.Locale) -> ReplyReaction
+
+  //! Inform the Chatbot with the last phrase heard by the robot.
+  //! It will be called anytime a reply not given by this Chatbot has been chosen
+  //! to answer a phrase.
+  //! @param phrase The input Phrase from the user
+  //! @param locale The Locale of the given Phrase
+  //! @since 3
+  fn acknowledgeHeard(phrase: Phrase, locale: qi.locale.Locale)
+
+  //! Inform the Chatbot with the last phrase said by the robot.
+  //! It will be called anytime a ChatbotReaction not given by this Chatbot has been chosen
+  //! to answer a phrase.
+  //! @param phrase The output Phrase from the robot
+  //! @param locale The Locale of the given Phrase
+  //! @since 3
+  fn acknowledgeSaid(phrase: Phrase, locale: qi.locale.Locale)
+
+  //! Represents a ChatbotReaction suggested spontaneously by the Chatbot and which is not the
+  //! reaction to a Phrase (as those should be managed by Chatbot.replyTo()).
+  //! Ex: The robot sees a person and the Chatbot wants to proactively greet him.
+  //! @observable
+  //! @since 3
+  prop autonomousReaction(autonomousReaction: AutonomousReaction)
+
+  //! The maximum hypotheses per utterance for this chatbot.
+  //! For every utterance, a Chat action can formulate several hypotheses, ordered from the most probable to the least probable.
+  //! For each hypothesis, the Chatbots will be called in order of priority until a suitable ReplyReaction is found.
+  //! This value limits the number of times a single Chatbot will be called for each utterance.
+  //! For a Chatbot, the default value of this property is 2.
+  //! If the provided value is negative or 0, the Chatbot won't be called at all.
+  //! @mutable
+  //! @observable
+  //! @since 4
+  prop maxHypothesesPerUtterance(maxHypothesesPerUtterance: int)
+end
+
+//! Action that listens to the users and interrogates its Chatbots to select the most appropriate answers.
+//! @since 3
+interface Chat
+  //! The robot starts to listen, react and talk by picking reactions.
+  //! If the robot is in a language different from the action language, the robot language will be changed.
+  //! @throws A Say action is already running
+  //! @throws A Listen action is already running
+  //! @throws Another Chat action is already running
+  //! @throws This Chat action is already running
+  //! @since 3
+  fn run()
+
+  //! Emitted when the Chat action starts
+  //! @since 3
+  sig started()
+
+  //! The body language option to be observed when listening
+  //! @mutable
+  //! @since 3
+  prop listeningBodyLanguage(bodyLanguageOption: BodyLanguageOption)
+
+  //! Indicates whether the Chat action is currently listening (meaning that the user can now speak).
+  //! @observable
+  //! @since 3
+  prop listening(listening: bool)
+
+  //! The Phrase which is currently said by the robot.
+  //! This value is set to a Phrase with an empty 'text' field when the robot finishes saying the Phrase.
+  //! @since 3
+  //! @observable
+  prop saying(sayingPhrase: Phrase)
+
+  //! Exposes whether the robot is currently hearing speech.
+  //! @observable
+  //! @since 3
+  prop hearing(hearing: bool)
+
+  //! The Phrase heard, emitted once the robot has heard a valid Phrase.
+  //! @since 3
+  sig heard(heardPhrase: Phrase)
+
+  //! Emitted when the robot has heard speech, but cannot determine the content of the Phrase said.
+  //! @since 3
+  sig noPhraseRecognized()
+
+  //! Emitted when a phrase was heard, and a corresponding Reply with the Normal ReplyPriority was selected.
+  //! @since 3
+  sig normalReplyFoundFor(input: Phrase)
+
+  //! Emitted when a phrase was heard, and a corresponding Reply with the Fallback ReplyPriority was selected.
+  //! @since 3
+  sig fallbackReplyFoundFor(input: Phrase)
+
+  //! Emitted when none of the chatbots found anything to say / do in answer to this Phrase.
+  //! @since 3
+  sig noReplyFoundFor(input: Phrase)
+end
+
+//! Object representing a user defined action to execute synchronously during an utterance
+//! in a QiChatbot
+//! @since 3
+interface QiChatExecutor
+  //! Run the user defined action
+  //! @param params A list of 0..N parameters from QiChat
+  //! @since 3
+  fn runWith(params: Vec<str>)
+
+  //! Stop the user defined action if it's running
+  //! @since 3
+  fn stop()
+end
+
+//! Chatbot that can be used to make the robot able to chat with a human.
+//! The interaction will be based on the content given in the QiChatbot topics.
+//! @implements qi.conversation.Chatbot
+//! @since 3
+interface QiChatbot
+  //! Get the content of the concept with the given name that can be converted to a string
+  //! This works with both static and dynamic concepts. (For a primer on static and dynamic concepts, please refer to the QiChat documentation)
+  //! @param conceptName The name of the concept
+  //! @return The content of the concept as a PhraseSet. Content that cannot be converted to a Phrase will be ignored
+  //! @throws There is no concept named conceptName
+  //! @since 3
+  fn concept(conceptName: str) -> PhraseSet
+
+  //! Retrieve the dynamic concept with the given name
+  //! This works only with dynamic concepts. (For a primer on static and dynamic concepts, please refer to the QiChat documentation)
+  //! @param conceptName The name of the concept we want to work on
+  //! @return An EditablePhraseSet to access / modify the content of the dynamic concept
+  //! @throws There is no concept named conceptName
+  //! @throws There is no concept dynamic concept named conceptName
+  //! @since 3
+  fn dynamicConcept(conceptName: str) -> EditablePhraseSet
+
+  //! Make the robot execute the interaction at the given Bookmark, only if the Bookmark can be emitted.
+  //! This provokes the emission of the autonomousReaction(Reply) signal, and will return only when
+  //! the run() of the emitted reply has finished.
+  //! @param bookmark The Bookmark to go to
+  //! @throws The given Bookmark does not belong to a topic from this QiChatbot
+  //! @throws No output containing this Bookmark can be instantiated (contain empty variable, disabled bookmarks...)
+  //! @throws No output containing this Bookmark that can be instantiated would emit said Bookmark
+  //! @since 3
+  fn goToBookmark(bookmark: Bookmark, importance: AutonomousReactionImportance, validity: AutonomousReactionValidity)
+
+  //! Obtain an object to observe and act on the given state of Bookmark within this QiChatbot
+  //! @param bookmark The Bookmark to observe / act on
+  //! @return An object allowing to observe / modify the runtime properties of the Bookmark.
+  //! @throws The given Bookmark does not belong to a topic from this QiChatbot
+  //! @since 3
+  fn bookmarkStatus(bookmark: Bookmark) -> BookmarkStatus
+
+  //! Obtain an object to observe and act on the given state of a Topic within this QiChatbot.
+  //! @param topic The Topic to observe / act on
+  //! @return An object allowing to observe / modify the runtime properties of the Topic.
+  //! @throws The given Topic does not belong to this QiChatbot
+  //! @since 3
+  fn topicStatus(topic: Topic) -> TopicStatus
+
+  //! Obtain access to the variable with the given name
+  //! @param varName The name of the variable we want to get
+  //! @return an object representing the variable
+  //! @throws There is no variable named varName in any of the Topics of this QiChatbot
+  //! @since 3
+  fn variable(varName: str) -> QiChatVariable
+
+  //! Obtain a list of possible human utterances for this QiChatbot as a whole
+  //! @param maxRecommendation The maximum amount of recommendations to return
+  //! @return The list of possible utterances
+  //! @since 3
+  fn globalRecommendations(maxRecommendations: int) -> Vec<Phrase>
+
+  //! Obtain a list of possible human utterances for the current scope of this QiChatbot
+  //! @param maxRecommendation The maximum amount of recommendations to return
+  //! @return The list of possible utterances
+  //! @since 3
+  fn scopeRecommendations(maxRecommendations: int) -> Vec<Phrase>
+
+  //! Obtain a list of possible human utterances for the currently focused topic of this QiChatbot
+  //! @param maxRecommendation The maximum amount of recommendations to return
+  //! @return The list of possible utterances
+  //! @since 3
+  fn focusedTopicRecommendations(maxRecommendations: int) -> Vec<Phrase>
+
+  //! Produce a ReplyReaction based on a given input phrase.
+  //! This phrase may be empty if the robot was not able to make out what was being said.
+  //! @param phrase The input Phrase from the user
+  //! @param locale The Locale of the given Phrase
+  //! @return A ReplyReaction corresponding to the given input Phrase
+  //! @throws The Chatbot has no answer at all for the given Phrase
+  //! @since 3
+  fn replyTo(phrase: Phrase, locale: qi.locale.Locale) -> ReplyReaction
+
+  //! Inform the Chatbot with the last phrase heard by the robot.
+  //! It will be called anytime a reply not given by this chatbot has been chosen
+  //! to answer a phrase.
+  //! @param phrase The input Phrase from the user
+  //! @param locale The Locale of the given Phrase
+  //! @since 3
+  fn acknowledgeHeard(phrase: Phrase, locale: qi.locale.Locale)
+
+  //! Inform the Chatbot with the last phrase said by the robot.
+  //! It will be called anytime a ChatbotReaction not given by this chatbot has been chosen
+  //! to answer a phrase.
+  //! @param phrase The output Phrase from the robot
+  //! @param locale The Locale of the given Phrase
+  //! @since 3
+  fn acknowledgeSaid(phrase: Phrase, locale: qi.locale.Locale)
+
+  //! Exposes a vector of the Topics in this QiChatbot
+  //! @since 3
+  prop topics(topics: Vec<qi.conversation.Topic>)
+
+  //! Exposes the topic that is currently focused
+  //! This is modified when the current topic changes during the conversation with the robot
+  //! for example when the user input matches a rule in another topic,
+  //! or when going to a Bookmark from a topic different from the current one
+  //! @param topic The new current topic
+  //! @observable
+  //! @since 3
+  prop focusedTopic(topic: Topic)
+
+  //! Represents a ChatbotReaction suggested spontaneously by the Chatbot and which is not the
+  //! reaction to a Phrase (as those should be managed by Chatbot.replyTo()).
+  //! Ex: The robot sees a person and the Chatbot want to proactively greet him.
+  //! should be an observable property
+  //! @observable
+  //! @since 3
+  prop autonomousReaction(autonomousReaction: AutonomousReaction)
+
+  //! The body language option to be observed when speaking
+  //! @mutable
+  //! @since 3
+  prop speakingBodyLanguage(bodyLanguageOption: BodyLanguageOption)
+
+  //! An application-defined map of the QiChatExecutor to use in this QiChatbot, with the values being
+  //! the QiChatExecutor instances to use, and the keys the labels (as string) used to identify them in QiChat
+  //! @since 3
+  //! @mutable
+  prop executors(executors: Map<str, QiChatExecutor>)
+
+  //! The maximum hypotheses per utterance for this chatbot.
+  //! For every utterance, a Chat action can formulate several hypotheses, ordered from the most probable to the least probable.
+  //! For each hypothesis, the Chatbots will be called in order of priority until a suitable ReplyReaction is found.
+  //! This value limits the number of times a single Chatbot will be called for each utterance.
+  //! For a QiChatbot, the default value of this property is 2.
+  //! If the provided value is negative or 0, the QiChatbot won't be called at all.
+  //! @mutable
+  //! @observable
+  //! @since 4
+  prop maxHypothesesPerUtterance(maxHypothesesPerUtterance: int)
+
+  //! Emitted when a Bookmark is reached
+  //! @since 3
+  sig bookmarkReached(bookmark: Bookmark)
+
+  //! Emitted when a ^endDiscuss(endReason) marker is reached.
+  //! @param endReason Information from the ^endDiscuss() marker
+  //! @since 3
+  sig ended(endReason: str)
+end
+
+//! An object collecting Conversation-related signals and properties for a given application context
+//! @since 3
+interface ConversationStatus
+  //! Indicates whether any action is currently listening (meaning that the user can now speak).
+  //! @observable
+  //! @since 3
+  prop listening(listening: bool)
+
+  //! The Phrase which is currently said by the robot.
+  //! This value is set to a Phrase with an empty 'text' field when the robot finishes saying the Phrase.
+  //! @since 3
+  //! @observable
+  prop saying(sayingPhrase: Phrase)
+
+  //! Exposes whether the robot is currently hearing speech.
+  //! @observable
+  //! @since 3
+  prop hearing(hearing: bool)
+
+  //! The Phrase heard, emitted once the robot has heard a valid Phrase.
+  //! @since 3
+  sig heard(heardPhrase: Phrase)
+
+  //! Emitted when the robot has heard speech, but cannot determine the content of the Phrase said.
+  //! @since 3
+  sig noPhraseRecognized()
+
+  //! Emitted when a phrase was heard, and a corresponding Reply with the Normal ReplyPriority was selected.
+  //! @since 3
+  sig normalReplyFoundFor(input: Phrase)
+
+  //! Emitted when a phrase was heard, and a corresponding Reply with the Fallback ReplyPriority was selected.
+  //! @since 3
+  sig fallbackReplyFoundFor(input: Phrase)
+
+  //! Emitted when none of the chatbots found anything to say / do in answer to this Phrase.
+  //! @since 3
+  sig noReplyFoundFor(input: Phrase)
+
+end
+
+//! Optional parameters for the configuration of a Chat action
+//! @since 5
+struct ChatOptions
+  //! The factory which is necessary to create the Say objects used
+  //! @since 5
+  speechEngine: Opt<SpeechEngine>
+
+  //! The locale of the Chat action, used for the speech recognition.
+  //! @since 5
+  locale: Opt<qi.locale.Locale>
+
+  //! ASR Driver parameters. These vary depending on the Automatic Speech Recognition solution chosen for your region.
+  //! If you are in an affected region, contact SoftBank Robotics for more details
+  //! @since 5
+  ASRParameters: Opt<Map<str, str>>
+end
+
+//! Optional parameters for the configuration of a Listen action
+//! @since 5
+struct ListenOptions
+  //! The body language policy to apply.
+  //! @since 5
+  bodyLanguageOption: Opt<BodyLanguageOption>
+
+  //! The locale of the Chat action, used for the speech recognition.
+  //! @since 5
+  locale: Opt<qi.locale.Locale>
+
+  //! ASR Driver parameters. These vary depending on the Automatic Speech Recognition solution chosen for your region.
+  //! If you are in an affected region, contact SoftBank Robotics for more details
+  //! @since 5
+  ASRParameters: Opt<Map<str, str>>
+end
+
+//! Service exposing actions and properties related to human-robot conversation.
+//! @since 1
+interface Conversation
+  //! Create a say action.
+  //! @param context The context to authorize the action to be effectively executed on a robot.
+  //! @param phrase The phrase to say.
+  //! @return A say action.
+  //! @since 1
+  fn makeSay(context: qi.context.Context,
+             phrase: Phrase) -> Say
+
+  //! Create a say action.
+  //! @param context The context to authorize the action to be effectively executed on a robot.
+  //! @param phrase The phrase to say.
+  //! @param bodyLanguageOption The body language policy to apply.
+  //! \"neutral\" policy: the robot chooses animations to perform accordingly to the spoken words and the syntactic structure of the phrase.
+  //! @return A say action.
+  //! @since 1
+  fn makeSay(context: qi.context.Context,
+             phrase: Phrase,
+             bodyLanguageOption: BodyLanguageOption) -> Say
+
+  //! Create a say action.
+  //! @param context The context to authorize the action to be effectively executed on a robot.
+  //! @param phrase The phrase to say.
+  //! @param bodyLanguageOption The body language policy to apply.
+  //! \"neutral\" policy: the robot chooses animations to perform accordingly to the spoken words and the syntactic structure of the phrase.
+  //! @param locale The locale to be used to say the text.
+  //! @return A say action.
+  //! @since 1
+  fn makeSay(context: qi.context.Context,
+             phrase: Phrase,
+             bodyLanguageOption: BodyLanguageOption,
+             locale: qi.locale.Locale) -> Say
+
+
+  //! Create a listen action.
+  //! @param context The context to authorize the action to be effectively executed on a robot.
+  //! @param phraseSets The vector of phrase sets to detect.
+  //! @return A listen action.
+  //! @since 1
+  fn makeListen(context: qi.context.Context,
+                phraseSets: Vec<PhraseSet>) -> Listen
+
+  //! Create a listen action.
+  //! @param context The context to authorize the action to be effectively executed on a robot.
+  //! @param phraseSets The vector of phrase sets to detect.
+  //! @param bodyLanguageOption The body language policy to apply.
+  //! \"neutral\" policy: the robot nods and gesticulates to express that he is listening.
+  //! And a final head node when the robot has finished to listen.
+  //! @return A listen action.
+  //! @since 1
+  fn makeListen(context: qi.context.Context,
+                phraseSets: Vec<PhraseSet>,
+                bodyLanguageOption: BodyLanguageOption) -> Listen
+
+  //! Create a listen action.
+  //! @param context The context to authorize the action to be effectively executed on a robot.
+  //! @param phraseSets The vector of phrase sets to detect.
+  //! @param bodyLanguageOption The body language policy to apply.
+  //! \"neutral\" policy: the robot nods and gesticulates to express that he is listening.
+  //! And a final head nod when the robot has finished to listen.
+  //! @param locale The locale to be used to listen.
+  //! @return A listen action.
+  //! @since 1
+  fn makeListen(context: qi.context.Context,
+                phraseSets: Vec<PhraseSet>,
+                bodyLanguageOption: BodyLanguageOption,
+                locale: qi.locale.Locale) -> Listen
+
+  //! Create a listen action, using the specified Options.
+  //! @param context The context to authorize the action to be effectively executed on a robot.
+  //! @param phraseSets The vector of phrase sets to detect.
+  //! @param listenOptions Optional data for the Listen action configuration
+  //! @return A listen action.
+  //! @since 5
+  fn makeListen(context: qi.context.Context,
+                phraseSets: Vec<PhraseSet>,
+                listenOptions: ListenOptions) -> Listen
+
+  //! Create a phrase set from a set of phrases.
+  //! @param phrases Set of phrases to put in the resulting phrase set.
+  //! @return A phrase set.
+  //! @since 1
+  fn makePhraseSet(phrases : Vec<Phrase>) -> PhraseSet
+
+  //! Create a Discussion in the current language.
+  //! @param context The context to authorize the action to be effectively executed on a robot
+  //! @param topics The list of topics to use with the action
+  //! @return A Discuss action.
+  //! @throws topics is empty.
+  //! @throws topics contains Topics with duplicate names.
+  //! @throws One or more of the Topics contain one or more concepts that have not been defined.
+  //! @throws One or more of the Topics contain one or more user defined functions that have not been defined.
+  //! @since 1
+  fn makeDiscuss(context: qi.context.Context, topics: Vec<Topic>) -> Discuss
+
+  //! Create a Discussion in the given language.
+  //! @param context The context to authorize the action to be effectively executed on a robot.
+  //! @param topics The list of topics to use with the action.
+  //! @param locale The language of the conversation.
+  //! @return A Discuss action.
+  //! @throws topics is empty.
+  //! @throws topics contains Topics with duplicate names.
+  //! @throws One or more of the Topics contain one or more concepts that have not been defined.
+  //! @throws One or more of the Topics contain one or more user defined functions that have not been defined
+  //! @throws The given locale is not available on the robot
+  //! @since 1
+  fn makeDiscuss(context: qi.context.Context, topics: Vec<Topic>, locale: qi.locale.Locale) -> Discuss
+
+  //! Create a new Topic object.
+  //! @param topicContent The content of the Topic
+  //! @return A topic object.
+  //! @throws The syntax of the topic given in topicContent is incorrect.
+  //! @since 1
+  fn makeTopic(topicContent: str) -> Topic
+
+  //! Creates a SpeechEngine, that will create Say actions using the Conversation service
+  //! with the given context
+  //! @param context The context to authorize the created Say actions to be effectively executed on a robot
+  //! @return A SpeechEngine
+  //! @since 3
+  fn makeSpeechEngine(context: qi.context.Context) -> SpeechEngine
+
+  //! Create a Chat in the current language
+  //! @param context The context to authorize the action to be effectively executed on a robot
+  //! @param chatbots The list of Chatbots to use with the action, ordered by priority
+  //! @throws The list of chatbots is empty
+  //! @return A Chat action
+  //! @since 3
+  fn makeChat(context: qi.context.Context, chatbots: Vec<Chatbot>) -> Chat
+
+  //! Create a Chat in the current language
+  //! @param context The context to authorize the action to be effectively executed on a robot
+  //! @param chatbots The list of Chatbots to use with the action, ordered by priority
+  //! @param speechEngine The factory which is necessary to create the Say objects used
+  //! to make speak the robot during a reply.
+  //! @throws The list of chatbots is empty
+  //! @return A Chat action
+  //! @since 3
+  fn makeChat(context: qi.context.Context, chatbots: Vec<Chatbot>, speechEngine: SpeechEngine) -> Chat
+
+  //! Create a Chat in the given language
+  //! @param context The context to authorize the action to be effectively executed on a robot
+  //! @param chatbots The list of Chatbots to use with the action, ordered by priority
+  //! @param locale The language of the chatbot
+  //! @throws The list of chatbots is empty
+  //! @throws The given locale is not available on the robot
+  //! @return A Chat action
+  //! @since 3
+  fn makeChat(context: qi.context.Context, chatbots: Vec<Chatbot>, locale: qi.locale.Locale) -> Chat
+
+  //! Create a Chat in the given language
+  //! @param context The context to authorize the action to be effectively executed on a robot
+  //! @param chatbots The list of Chatbots to use with the action, ordered by priority
+  //! @param locale The language of the chatbot
+  //! @param speechEngine The factory which is necessary to create the Say objects used
+  //! to make speak the robot during a reply.
+  //! @throws The list of chatbots is empty
+  //! @throws The given locale is not available on the robot
+  //! @return A Chat action
+  //! @since 3
+  fn makeChat(context: qi.context.Context, chatbots: Vec<Chatbot>, speechEngine: SpeechEngine, locale: qi.locale.Locale) -> Chat
+
+  //! Create a Chat in the current language, using the specified options.
+  //! @param context The context to authorize the action to be effectively executed on a robot
+  //! @param chatbots The list of Chatbots to use with the action, ordered by priority
+  //! @param chatOptions Optional data for the Chat action configuration
+  //! @throws The list of chatbots is empty
+  //! @return A Chat action
+  //! @since 5
+  fn makeChat(context: qi.context.Context, chatbots: Vec<Chatbot>, chatOptions: ChatOptions) -> Chat
+
+  //! Create a Qichatbot in the current language.
+  //! @param context The context of the application
+  //! @param topics The list of topics to use within the QiChatbot
+  //! @return A QiChatbot.
+  //! @throws topics is empty.
+  //! @throws topics contains Topics with duplicate names.
+  //! @throws One or more of the Topics contain one or more concepts that have not been defined.
+  //! @throws One or more of the Topics contain one or more user defined functions that have not been defined.
+  //! @since 3
+  fn makeQiChatbot(context: qi.context.Context, topics: Vec<Topic>) -> QiChatbot
+
+  //! Create a Qichatbot in the given language.
+  //! @param context The context of the application
+  //! @param topics The list of topics to use within the QiChatbot
+  //! @param locale The language of the conversation.
+  //! @return A QiChatbot.
+  //! @throws topics is empty.
+  //! @throws topics contains Topics with duplicate names.
+  //! @throws One or more of the Topics contain one or more concepts that have not been defined.
+  //! @throws One or more of the Topics contain one or more user defined functions that have not been defined.
+  //! @throws The given locale is not available on the robot
+  //! @since 3
+  fn makeQiChatbot(context: qi.context.Context, topics: Vec<Topic>, locale: qi.locale.Locale) -> QiChatbot
+
+  //! Access Conversation related signals and properties for the given context via a ConversationStatus object
+  //! @since 3
+  //! @param context The context of the application
+  //! @return A ConversationStatus object
+  fn status(context: qi.context.Context) -> ConversationStatus
+end

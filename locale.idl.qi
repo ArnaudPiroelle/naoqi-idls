@@ -1,0 +1,898 @@
+package qi.locale
+
+
+//! All the possible languages
+//! @since 1
+enum Language
+  //! @since 1
+  const Unknown = 0
+  //! @since 1
+  const Afar = 1
+  //! @since 1
+  const Abkhaz = 2
+  //! @since 1
+  const Avestan = 3
+  //! @since 1
+  const Afrikaans = 4
+  //! @since 1
+  const Akan = 5
+  //! @since 1
+  const Amharic = 6
+  //! @since 1
+  const Aragonese = 7
+  //! @since 1
+  const Arabic = 8
+  //! @since 1
+  const Assamese = 9
+  //! @since 1
+  const Avaric = 10
+  //! @since 1
+  const Aymara = 11
+  //! @since 1
+  const Azerbaijani = 12
+  //! @since 1
+  const Bashkir = 13
+  //! @since 1
+  const Belarusian = 14
+  //! @since 1
+  const Bulgarian = 15
+  //! @since 1
+  const Bihari = 16
+  //! @since 1
+  const Bislama = 17
+  //! @since 1
+  const Bambara = 18
+  //! @since 1
+  const Bengali = 19
+  //! @since 1
+  const Tibetan = 20
+  //! @since 1
+  const Breton = 21
+  //! @since 1
+  const Bosnian = 22
+  //! @since 1
+  const Catalan = 23
+  //! @since 1
+  const Chechen = 24
+  //! @since 1
+  const Chamorro = 25
+  //! @since 1
+  const Corsican = 26
+  //! @since 1
+  const Cree = 27
+  //! @since 1
+  const Czech = 28
+  //! @since 1
+  const Old_Church_Slavonic = 29
+  //! @since 1
+  const Chuvash = 30
+  //! @since 1
+  const Welsh = 31
+  //! @since 1
+  const Danish = 32
+  //! @since 1
+  const German = 33
+  //! @since 1
+  const Divehi = 34
+  //! @since 1
+  const Dzongkha = 35
+  //! @since 1
+  const Ewe = 36
+  //! @since 1
+  const Greek = 37
+  //! @since 1
+  const English = 38
+  //! @since 1
+  const Esperanto = 39
+  //! @since 1
+  const Spanish = 40
+  //! @since 1
+  const Estonian = 41
+  //! @since 1
+  const Basque = 42
+  //! @since 1
+  const Persian = 43
+  //! @since 1
+  const Fulah = 44
+  //! @since 1
+  const Finnish = 45
+  //! @since 1
+  const Fijian = 46
+  //! @since 1
+  const Faroese = 47
+  //! @since 1
+  const French = 48
+  //! @since 1
+  const Western_Frisian = 49
+  //! @since 1
+  const Irish = 50
+  //! @since 1
+  const Scottish_Gaelic = 51
+  //! @since 1
+  const Galician = 52
+  //! @since 1
+  const Guarani = 53
+  //! @since 1
+  const Gujarati = 54
+  //! @since 1
+  const Manx = 55
+  //! @since 1
+  const Hausa = 56
+  //! @since 1
+  const Hebrew = 57
+  //! @since 1
+  const Hindi = 58
+  //! @since 1
+  const Hiri_Motu = 59
+  //! @since 1
+  const Croatian = 60
+  //! @since 1
+  const Haitian = 61
+  //! @since 1
+  const Hungarian = 62
+  //! @since 1
+  const Armenian = 63
+  //! @since 1
+  const Herero = 64
+  //! @since 1
+  const Interlingua = 65
+  //! @since 1
+  const Indonesian = 66
+  //! @since 1
+  const Interlingue = 67
+  //! @since 1
+  const Igbo = 68
+  //! @since 1
+  const Nuosu = 69
+  //! @since 1
+  const Inupiaq = 70
+  //! @since 1
+  const Ido = 71
+  //! @since 1
+  const Icelandic = 72
+  //! @since 1
+  const Italian = 73
+  //! @since 1
+  const Inuktitut =  74
+  //! @since 1
+  const Japanese = 75
+  //! @since 1
+  const Javanese = 76
+  //! @since 1
+  const Georgian = 77
+  //! @since 1
+  const Kongo = 78
+  //! @since 1
+  const Kikuyu = 79
+  //! @since 1
+  const Kwanyama = 80
+  //! @since 1
+  const Kazakh = 81
+  //! @since 1
+  const Kalaallisut = 82
+  //! @since 1
+  const Khmer = 83
+  //! @since 1
+  const Kannada = 84
+  //! @since 1
+  const Korean = 85
+  //! @since 1
+  const Kanuri = 86
+  //! @since 1
+  const Kashmiri = 87
+  //! @since 1
+  const Kurdish = 88
+  //! @since 1
+  const Komi = 89
+  //! @since 1
+  const Cornish = 90
+  //! @since 1
+  const Kyrgyz = 91
+  //! @since 1
+  const Latin = 92
+  //! @since 1
+  const Luxembourgish = 93
+  //! @since 1
+  const Ganda = 94
+  //! @since 1
+  const Limburgish = 95
+  //! @since 1
+  const Lingala = 96
+  //! @since 1
+  const Lao = 97
+  //! @since 1
+  const Lithuanian = 98
+  //! @since 1
+  const Luba_Katanga = 99
+  //! @since 1
+  const Latvian = 100
+  //! @since 1
+  const Malagasy = 101
+  //! @since 1
+  const Marshallese = 102
+  //! @since 1
+  const Maori = 103
+  //! @since 1
+  const Macedonian = 104
+  //! @since 1
+  const Malayalam = 105
+  //! @since 1
+  const Mongolian = 106
+  //! @since 1
+  const Marathi = 107
+  //! @since 1
+  const Malay = 108
+  //! @since 1
+  const Maltese = 109
+  //! @since 1
+  const Burmese = 110
+  //! @since 1
+  const Nauru = 111
+  //! @since 1
+  const Norwegian_Bokmal = 112
+  //! @since 1
+  const Northern_Ndebele = 113
+  //! @since 1
+  const Nepali = 114
+  //! @since 1
+  const Ndonga = 115
+  //! @since 1
+  const Dutch = 116
+  //! @since 1
+  const Norwegian_Nynorsk = 117
+  //! @since 1
+  const Norwegian = 118
+  //! @since 1
+  const Southern_Ndebele = 119
+  //! @since 1
+  const Navajo = 120
+  //! @since 1
+  const Chichewa = 121
+  //! @since 1
+  const Occitan = 122
+  //! @since 1
+  const Ojibwa = 123
+  //! @since 1
+  const Oromo = 124
+  //! @since 1
+  const Oriya = 125
+  //! @since 1
+  const Ossetian = 126
+  //! @since 1
+  const Punjabi = 127
+  //! @since 1
+  const Pali = 128
+  //! @since 1
+  const Polish = 129
+  //! @since 1
+  const Pashto = 130
+  //! @since 1
+  const Portuguese = 131
+  //! @since 1
+  const Quechua = 132
+  //! @since 1
+  const Romansh = 133
+  //! @since 1
+  const Rundi = 134
+  //! @since 1
+  const Romanian = 135
+  //! @since 1
+  const Russian = 136
+  //! @since 1
+  const Kinyarwanda = 137
+  //! @since 1
+  const Sanskrit = 138
+  //! @since 1
+  const Sardinian = 139
+  //! @since 1
+  const Sindhi = 140
+  //! @since 1
+  const Northern_Sami = 141
+  //! @since 1
+  const Sango = 142
+  //! @since 1
+  const Sinhalese = 143
+  //! @since 1
+  const Slovak = 144
+  //! @since 1
+  const Slovenian = 145
+  //! @since 1
+  const Samoan = 146
+  //! @since 1
+  const Shona = 147
+  //! @since 1
+  const Somali = 148
+  //! @since 1
+  const Albanian = 149
+  //! @since 1
+  const Serbian = 150
+  //! @since 1
+  const Swati = 151
+  //! @since 1
+  const Southern_Sotho = 152
+  //! @since 1
+  const Sundanese = 153
+  //! @since 1
+  const Swedish = 154
+  //! @since 1
+  const Swahili = 155
+  //! @since 1
+  const Tamil = 156
+  //! @since 1
+  const Telugu = 157
+  //! @since 1
+  const Tajik = 158
+  //! @since 1
+  const Thai = 159
+  //! @since 1
+  const Tigrinya = 160
+  //! @since 1
+  const Turkmen = 161
+  //! @since 1
+  const Tagalog = 162
+  //! @since 1
+  const Tswana = 163
+  //! @since 1
+  const Tonga = 164
+  //! @since 1
+  const Turkish = 165
+  //! @since 1
+  const Tsonga = 166
+  //! @since 1
+  const Tatar = 167
+  //! @since 1
+  const Twi = 168
+  //! @since 1
+  const Tahitian = 169
+  //! @since 1
+  const Uighur = 170
+  //! @since 1
+  const Ukrainian = 171
+  //! @since 1
+  const Urdu = 172
+  //! @since 1
+  const Uzbek = 173
+  //! @since 1
+  const Venda = 174
+  //! @since 1
+  const Vietnamese = 175
+  //! @since 1
+  const Volapuk = 176
+  //! @since 1
+  const Walloon = 177
+  //! @since 1
+  const Wolof = 178
+  //! @since 1
+  const Xhosa = 179
+  //! @since 1
+  const Yiddish = 180
+  //! @since 1
+  const Yoruba = 181
+  //! @since 1
+  const Zhuang = 182
+  //! @since 1
+  const Chinese = 183
+  //! @since 1
+  const Zulu = 184
+end
+
+
+//! All the possible regions
+//! @since 1
+enum Region
+  //! @since 1
+  const Unknown = 0
+  //! @since 1
+  const Afghanistan = 1
+  //! @since 1
+  const Aland_Islands = 2
+  //! @since 1
+  const Albania = 3
+  //! @since 1
+  const Algeria = 4
+  //! @since 1
+  const American_Samoa = 5
+  //! @since 1
+  const Andorra = 6
+  //! @since 1
+  const Angola = 7
+  //! @since 1
+  const Anguilla = 8
+  //! @since 1
+  const Antarctica = 9
+  //! @since 1
+  const Antigua_and_Barbuda = 10
+  //! @since 1
+  const Argentina = 11
+  //! @since 1
+  const Armenia = 12
+  //! @since 1
+  const Aruba = 13
+  //! @since 1
+  const Australia = 14
+  //! @since 1
+  const Austria = 15
+  //! @since 1
+  const Azerbaijan = 16
+  //! @since 1
+  const Bahamas = 17
+  //! @since 1
+  const Bahrain = 18
+  //! @since 1
+  const Bangladesh = 19
+  //! @since 1
+  const Barbados = 20
+  //! @since 1
+  const Belarus = 21
+  //! @since 1
+  const Belgium = 22
+  //! @since 1
+  const Belize = 23
+  //! @since 1
+  const Benin = 24
+  //! @since 1
+  const Bermuda = 25
+  //! @since 1
+  const Bhutan = 26
+  //! @since 1
+  const Bolivia = 27
+  //! @since 1
+  const Bonaire = 28
+  //! @since 1
+  const Bosnia_and_Herzegovina = 29
+  //! @since 1
+  const Botswana = 30
+  //! @since 1
+  const Bouvet_Island = 31
+  //! @since 1
+  const Brazil = 32
+  //! @since 1
+  const British_Indian_Ocean_Territory = 33
+  //! @since 1
+  const Brunei_Darussalam = 34
+  //! @since 1
+  const Bulgaria = 35
+  //! @since 1
+  const Burkina_Faso = 36
+  //! @since 1
+  const Burundi = 37
+  //! @since 1
+  const Cambodia = 38
+  //! @since 1
+  const Cameroon = 39
+  //! @since 1
+  const Canada = 40
+  //! @since 1
+  const Cape_Verde = 41
+  //! @since 1
+  const Cayman_Islands = 42
+  //! @since 1
+  const Central_African_Republic = 43
+  //! @since 1
+  const Chad = 44
+  //! @since 1
+  const Chile = 45
+  //! @since 1
+  const China = 46
+  //! @since 1
+  const Christmas_Island = 47
+  //! @since 1
+  const Cocos_Islands = 48
+  //! @since 1
+  const Colombia = 49
+  //! @since 1
+  const Comoros = 50
+  //! @since 1
+  const Congo = 51
+  //! @since 1
+  const Democratic_Republic_of_the_Congo = 52
+  //! @since 1
+  const Cook_Islands = 53
+  //! @since 1
+  const Costa_Rica = 54
+  //! @since 1
+  const Cote_d_Ivoire = 55
+  //! @since 1
+  const Croatia = 56
+  //! @since 1
+  const Cuba = 57
+  //! @since 1
+  const Curacao = 58
+  //! @since 1
+  const Cyprus = 59
+  //! @since 1
+  const Czech_Republic = 60
+  //! @since 1
+  const Denmark = 61
+  //! @since 1
+  const Djibouti = 62
+  //! @since 1
+  const Dominica = 63
+  //! @since 1
+  const Dominican_Republic = 64
+  //! @since 1
+  const Ecuador = 65
+  //! @since 1
+  const Egypt = 66
+  //! @since 1
+  const El_Salvador = 67
+  //! @since 1
+  const Equatorial_Guinea = 68
+  //! @since 1
+  const Eritrea = 69
+  //! @since 1
+  const Estonia = 70
+  //! @since 1
+  const Ethiopia = 71
+  //! @since 1
+  const Falkland_Islands = 72
+  //! @since 1
+  const Faroe_Islands = 73
+  //! @since 1
+  const Fiji = 74
+  //! @since 1
+  const Finland = 75
+  //! @since 1
+  const France = 76
+  //! @since 1
+  const French_Guiana = 77
+  //! @since 1
+  const French_Polynesia = 78
+  //! @since 1
+  const French_Southern_Territories = 79
+  //! @since 1
+  const Gabon = 80
+  //! @since 1
+  const Gambia = 81
+  //! @since 1
+  const Georgia = 82
+  //! @since 1
+  const Germany = 83
+  //! @since 1
+  const Ghana = 84
+  //! @since 1
+  const Gibraltar = 85
+  //! @since 1
+  const Greece = 86
+  //! @since 1
+  const Greenland = 87
+  //! @since 1
+  const Grenada = 88
+  //! @since 1
+  const Guadeloupe = 89
+  //! @since 1
+  const Guam = 90
+  //! @since 1
+  const Guatemala = 91
+  //! @since 1
+  const Guernsey = 92
+  //! @since 1
+  const Guinea = 93
+  //! @since 1
+  const Guinea_Bissau = 94
+  //! @since 1
+  const Guyana = 95
+  //! @since 1
+  const Haiti = 96
+  //! @since 1
+  const Heard_Island_and_McDonald_Islands = 97
+  //! @since 1
+  const Holy_See = 98
+  //! @since 1
+  const Honduras = 99
+  //! @since 1
+  const Hong_Kong = 100
+  //! @since 1
+  const Hungary = 101
+  //! @since 1
+  const Iceland = 102
+  //! @since 1
+  const India = 103
+  //! @since 1
+  const Indonesia = 104
+  //! @since 1
+  const Iran = 105
+  //! @since 1
+  const Iraq = 106
+  //! @since 1
+  const Ireland = 107
+  //! @since 1
+  const Isle_of_Man = 108
+  //! @since 1
+  const Israel = 109
+  //! @since 1
+  const Italy = 110
+  //! @since 1
+  const Jamaica = 111
+  //! @since 1
+  const Japan = 112
+  //! @since 1
+  const Jersey = 113
+  //! @since 1
+  const Jordan = 114
+  //! @since 1
+  const Kazakhstan = 115
+  //! @since 1
+  const Kenya = 116
+  //! @since 1
+  const Kiribati = 117
+  //! @since 1
+  const Democratic_People_s_Republic_of_Korea = 118
+  //! @since 1
+  const Republic_of_Korea = 119
+  //! @since 1
+  const Kuwait = 120
+  //! @since 1
+  const Kyrgyzstan = 121
+  //! @since 1
+  const Lao_People_s_Democratic_Republic = 122
+  //! @since 1
+  const Latvia = 123
+  //! @since 1
+  const Lebanon = 124
+  //! @since 1
+  const Lesotho = 125
+  //! @since 1
+  const Liberia = 126
+  //! @since 1
+  const Libya = 127
+  //! @since 1
+  const Liechtenstein = 128
+  //! @since 1
+  const Lithuania = 129
+  //! @since 1
+  const Luxembourg = 130
+  //! @since 1
+  const Macao = 131
+  //! @since 1
+  const Macedonia = 132
+  //! @since 1
+  const Madagascar = 133
+  //! @since 1
+  const Malawi = 134
+  //! @since 1
+  const Malaysia = 135
+  //! @since 1
+  const Maldives = 136
+  //! @since 1
+  const Mali = 137
+  //! @since 1
+  const Malta = 138
+  //! @since 1
+  const Marshall_Islands = 139
+  //! @since 1
+  const Martinique = 140
+  //! @since 1
+  const Mauritania = 141
+  //! @since 1
+  const Mauritius = 142
+  //! @since 1
+  const Mayotte = 143
+  //! @since 1
+  const Mexico = 144
+  //! @since 1
+  const Micronesia = 145
+  //! @since 1
+  const Moldova = 146
+  //! @since 1
+  const Monaco = 147
+  //! @since 1
+  const Mongolia = 148
+  //! @since 1
+  const Montenegro = 149
+  //! @since 1
+  const Montserrat = 150
+  //! @since 1
+  const Morocco = 151
+  //! @since 1
+  const Mozambique = 152
+  //! @since 1
+  const Myanmar = 153
+  //! @since 1
+  const Namibia = 154
+  //! @since 1
+  const Nauru = 155
+  //! @since 1
+  const Nepal = 156
+  //! @since 1
+  const Netherlands = 157
+  //! @since 1
+  const New_Caledonia = 158
+  //! @since 1
+  const New_Zealand = 159
+  //! @since 1
+  const Nicaragua = 160
+  //! @since 1
+  const Niger = 161
+  //! @since 1
+  const Nigeria = 162
+  //! @since 1
+  const Niue = 163
+  //! @since 1
+  const Norfolk_Island = 164
+  //! @since 1
+  const Northern_Mariana_Islands = 165
+  //! @since 1
+  const Norway = 166
+  //! @since 1
+  const Oman = 167
+  //! @since 1
+  const Pakistan = 168
+  //! @since 1
+  const Palau = 169
+  //! @since 1
+  const Palestine = 170
+  //! @since 1
+  const Panama = 171
+  //! @since 1
+  const Papua_New_Guinea = 172
+  //! @since 1
+  const Paraguay = 173
+  //! @since 1
+  const Peru = 174
+  //! @since 1
+  const Philippines = 175
+  //! @since 1
+  const Pitcairn = 176
+  //! @since 1
+  const Poland = 177
+  //! @since 1
+  const Portugal = 178
+  //! @since 1
+  const Puerto_Rico = 179
+  //! @since 1
+  const Qatar = 180
+  //! @since 1
+  const Reunion = 181
+  //! @since 1
+  const Romania = 182
+  //! @since 1
+  const Russian_Federation = 183
+  //! @since 1
+  const Rwanda = 184
+  //! @since 1
+  const Saint_Barthelemy = 185
+  //! @since 1
+  const Saint_Helena = 186
+  //! @since 1
+  const Saint_Kitts_and_Nevis = 187
+  //! @since 1
+  const Saint_Lucia = 188
+  //! @since 1
+  const Saint_Martin = 189
+  //! @since 1
+  const Saint_Pierre_and_Miquelon = 190
+  //! @since 1
+  const Saint_Vincent_and_the_Grenadines = 191
+  //! @since 1
+  const Samoa = 192
+  //! @since 1
+  const San_Marino = 193
+  //! @since 1
+  const Sao_Tome_and_Principe = 194
+  //! @since 1
+  const Saudi_Arabia = 195
+  //! @since 1
+  const Senegal = 196
+  //! @since 1
+  const Serbia = 197
+  //! @since 1
+  const Seychelles = 198
+  //! @since 1
+  const Sierra_Leone = 199
+  //! @since 1
+  const Singapore = 200
+  //! @since 1
+  const Sint_Maarten = 201
+  //! @since 1
+  const Slovakia = 202
+  //! @since 1
+  const Slovenia = 203
+  //! @since 1
+  const Solomon_Islands = 204
+  //! @since 1
+  const Somalia = 205
+  //! @since 1
+  const South_Africa = 206
+  //! @since 1
+  const South_Georgia_and_the_South_Sandwich_Islands = 207
+  //! @since 1
+  const South_Sudan = 208
+  //! @since 1
+  const Spain = 209
+  //! @since 1
+  const Sri_Lanka = 210
+  //! @since 1
+  const Sudan = 211
+  //! @since 1
+  const Suriname = 212
+  //! @since 1
+  const Svalbard_and_Jan_Mayen = 213
+  //! @since 1
+  const Swaziland = 214
+  //! @since 1
+  const Sweden = 215
+  //! @since 1
+  const Switzerland = 216
+  //! @since 1
+  const Syrian_Arab_Republic = 217
+  //! @since 1
+  const Taiwan = 218
+  //! @since 1
+  const Tajikistan = 219
+  //! @since 1
+  const Tanzania = 220
+  //! @since 1
+  const Thailand = 221
+  //! @since 1
+  const Timor_Leste = 222
+  //! @since 1
+  const Togo = 223
+  //! @since 1
+  const Tokelau = 224
+  //! @since 1
+  const Tonga = 225
+  //! @since 1
+  const Trinidad_and_Tobago = 226
+  //! @since 1
+  const Tunisia = 227
+  //! @since 1
+  const Turkey = 228
+  //! @since 1
+  const Turkmenistan = 229
+  //! @since 1
+  const Turks_and_Caicos_Islands = 230
+  //! @since 1
+  const Tuvalu = 231
+  //! @since 1
+  const Uganda = 232
+  //! @since 1
+  const Ukraine = 233
+  //! @since 1
+  const United_Arab_Emirates = 234
+  //! @since 1
+  const United_Kingdom = 235
+  //! @since 1
+  const United_States = 236
+  //! @since 1
+  const United_States_Minor_Outlying_Islands = 237
+  //! @since 1
+  const Uruguay = 238
+  //! @since 1
+  const Uzbekistan = 239
+  //! @since 1
+  const Vanuatu = 240
+  //! @since 1
+  const Venezuela = 241
+  //! @since 1
+  const Viet_Nam = 242
+  //! @since 1
+  const Virgin_Islands_British = 243
+  //! @since 1
+  const Virgin_Islands_US = 244
+  //! @since 1
+  const Wallis_and_Futuna = 245
+  //! @since 1
+  const Western_Sahara = 246
+  //! @since 1
+  const Yemen = 247
+  //! @since 1
+  const Zambia = 248
+  //! @since 1
+  const Zimbabwe = 249
+end
+
+
+//! A locale
+//! @since 1
+struct Locale
+  //! The language of the locale.
+  //! @since 1
+  language: Language
+  //! The region of the locale.
+  //! @since 1
+  region: Region
+end
+
+
+

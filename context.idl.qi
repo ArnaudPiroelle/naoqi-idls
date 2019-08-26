@@ -1,0 +1,29 @@
+package qi.context
+import qi.focus
+
+//! The context object gathers together all the handles and tokens that
+//! authorize an action to be effectively executed on a robot.
+//! @since 1
+interface Context
+  //! The focus handle carried over by the context.
+  //! @return a qi.focus.FocusOwner.
+  //! @mutable
+  //! @observable
+  //! @since 1
+  prop focus(owner: qi.focus.FocusOwner)
+
+  //! The encrypted identity of the owner of the context.
+  //! @mutable
+  //! @observable
+  //! @since 2
+  prop identity(id: str)
+end
+
+//! The context factory is a service providing a context.
+//! @since 1
+interface ContextFactory
+//! @brief Create a context object.
+//! @return a context.
+//! @since 1
+  fn makeContext() -> Context
+end

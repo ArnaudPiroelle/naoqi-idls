@@ -1,0 +1,49 @@
+// IMAGE
+
+package qi.image
+
+
+//! @brief Encoded Image
+//! @since 3
+struct EncodedImage
+    //! @brief Byte array containing an image data.
+    //! @note  The data may be encoded using PNG or JPEG format.
+    //! @since 3
+    data: any
+end
+
+
+//! @brief Timestamped encoded image
+//! @since 3
+struct TimestampedImage
+    //! @brief Encoded image data
+    //! @since 3
+    image: EncodedImage
+    //! @brief Timestamp of the last update time
+    //! @since 3
+    time: qitimepoint
+end
+
+
+//! @brief Encapsulates an EncodedImage.
+//! This object enables to share EncodedImage data while delaying the copy to
+//! the most appropriate time.
+//! @since 3
+interface EncodedImageHandle
+  //! @brief A getter for the EncodedImage data.
+  //! @since 3
+  prop value(value: EncodedImage)
+end
+
+
+//! @brief Associates a timestamp to an EncodedImageHandle.
+//! @since 3
+struct TimestampedImageHandle
+  //! @brief Timestamp of the data
+  //! @since 3
+  time: qitimepoint
+  //! @brief Proxy to the image data.
+  //! @since 3
+  image: EncodedImageHandle
+end
+

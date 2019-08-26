@@ -1,0 +1,48 @@
+package qi.touch
+
+from qi.actuation import Frame
+
+//! @brief Description of a touch sensor state.
+//! @since 1
+struct TouchState
+  //! @brief The current state of the sensor: touched or not.
+  //! @since 1
+  touched: bool
+  //! @brief The last time the sensor state changed.
+  //! @since 1
+  time: qitimepoint
+end
+
+//! @brief Object representing a sensor that detects when the robot is touched.
+//! @since 1
+interface TouchSensor
+  //! @brief The sensor name.
+  //! @since 1
+  prop name(name: str)
+
+  //! @brief A Frame describing the sensor location.
+  //! @since 1
+  prop frame(frame: qi.actuation.Frame)
+
+  //! @brief The current sensor state.
+  //! @observable
+  //! @since 1
+  prop state(state: TouchState)
+end
+
+//! @brief The Touch service provides objects to access and subscribe to sensor
+//! data.
+//! @since 1
+interface Touch
+  //! @brief Get the names of the robot touch sensors.
+  //! @return A vector of sensor names.
+  //! @since 1
+  fn getSensorNames() -> Vec<str>
+
+  //! @brief Get the TouchSensor object associated with a sensor.
+  //! @param name The sensor name.
+  //! @throws if the sensor name is unknown.
+  //! @return A TouchSensor object.
+  //! @since 1
+  fn getSensor(name: str) -> qi.touch.TouchSensor
+end

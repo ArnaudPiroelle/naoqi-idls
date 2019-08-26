@@ -1,0 +1,95 @@
+package qi.actuation
+
+//! @brief Localization process status
+//! @since 3
+enum LocalizationStatus
+  //! @brief Not started. The map frame is not available.
+  //! @since 3
+  const NotStarted = 0
+  //! @brief Actively scanning around. Wheel and joint ressources are taken.
+  //! @since 3
+  const Scanning = 1
+  //! @brief Localized. Wheel and joint resources are released and map frame becomes available.
+  //! @since 3
+  const Localized = 2
+end
+
+//! @brief Object encapsulating the data needed by the robot to localize
+//! himself inside his environment.
+//! @since 3
+interface ExplorationMap
+  //! @brief Serialize the map data.
+  //! @since 3
+  fn serialize() -> str
+end
+
+//! @brief Action to make the robot explore an unknown environment, while localizing himself
+//! inside it and building a representation of this environment, known as an exploration map.
+//! Only one action among LocalizeAndMap
+//! or Localize can run at a time. When run, the robot first executes a rotating
+//! base and head scan. During this initial scan, the action needs all the robot
+//! resources to run and the action status is `Scanning`.  After the scan, it is the developer's
+//! responsibility to make the robot move, and to stop the mapping
+//! when done. The developer thus has full control over the mapped area.
+//! While the action is running, the robot may autonomously look around to confirm his location.
+//! A given environment needs to be mapped once and only once. The result of this mapping
+//! can be dumped to a ExplorationMap object. Afterwards, the ExplorationMap object can be used to
+//! create a Localize action, that will enable the robot to keep track of his position
+//! relatively to the map.
+//! @since 3
+interface LocalizeAndMap
+  //! @brief Start the mapping process. It will run until the future returned
+  //! by run() is canceled.
+  //! @since 3
+  fn run()
+
+  //! @brief Localization status.
+  //! @since 3
+  //! @observable
+  prop status(status: LocalizationStatus)
+
+  //! @brief Dump the current map, for future use by a Localize action.
+  //! @throws if the action has not run yet.
+  //! @return the current map if the action is running and the last
+  //! created map if the action has already been stopped.
+  //! @since 3
+  fn dumpMap() -> ExplorationMap
+
+  //! @brief Emitted when the action starts running.
+  //! @since 3
+  sig started()
+end
+
+//! @brief Action to make the robot localize himself in a map, previously built by a
+//! LocalizeAndMap action.
+//! Only one LocalizeAndMap or Localize action can run at a time. When run, the robot first
+//! executes a rotating base and head scan. During this initial scan, the action needs
+//! all the robot resources to run, and the action status is `Scanning`.
+//! After this scan, the robot is localized inside his map,
+//! and his position and orientation relatively to the map origin can be retrieved, at any
+//! time, by calling `Actuation.robotFrame().computeTransform(Mapping.mapFrame())`
+//! While the action is running, the robot may autonomously look around to confirm his location.
+//! @since 3
+interface Localize
+  //! @brief Start the localization process. It will run until the future returned
+  //! by run() is canceled.
+  //! @since 3
+  fn run()
+
+  //! @brief Start the localization process, and give it a hint about the robot
+  //! current location relatively to the Map origin.
+  //! The localization process will run until the future returned
+  //! by runWithLocalizationHint() is canceled.
+  //! @since 3
+  //! @param External localization hint to give strong advice about robot position in map frame.
+  fn runWithLocalizationHint(hint: qi.geometry.Transform)
+
+  //! @brief Localization status.
+  //! @since 3
+  //! @observable
+  prop status(status: LocalizationStatus)
+
+  //! @brief Emitted when the action starts running.
+  //! @since 3
+  sig started()
+end

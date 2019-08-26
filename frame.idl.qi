@@ -1,0 +1,105 @@
+package qi.actuation
+
+import qi.geometry
+
+
+//! @brief Object representing the location associated with an object or a
+//! person. This location is likely to change over time, for example when a
+//! person moves.
+//! Transforms can be computed out of two frames, at a given time, to get the
+//! relative position and orientation between two objects.
+//! If the robot is localized using external sensors, the transform between two
+//! frames can be computed with odometry drift compensation.
+//! @since 1
+interface Frame
+  //! @brief Create a frame representing the location of an object, and
+  //! initialize it at the given transform with respect to current frame.
+  //! The attached frame will move with its parent.
+  //! @param tf The desired transform between this frame and the new one.
+  //! @return A handle to the attached frame.
+  //! @since 1
+  fn makeAttachedFrame(tf: qi.geometry.Transform) -> AttachedFrame
+
+  //! @brief Compute the last known transform between this frame and the given
+  //! base frame.
+  //! @param baseFrame The Frame with respect to which the transform should
+  //! be computed.
+  //! @return A qi.geometry.TransformTime containing the computed transform
+  //! and the time associated with it. The computed value is continuous but is
+  //! likely to drift over time.
+  //! @since 1
+  fn computeTransform(baseFrame: Frame) -> qi.geometry.TransformTime
+
+  //! @brief Compute the last known transform between this frame and the given
+  //! base frame. The result will compensate the odometry drift if the robot
+  //! is localized in the environment.
+  //! @param baseFrame The Frame with respect to which the transform should
+  //! be computed.
+  //! @return A qi.geometry.TransformTime containing the computed transform
+  //! and the time associated with it. The computed value can be discontinuous but
+  //! is likely to compensate odometry drift over time.
+  //! @since 1
+  fn computeTransformWithRobotDriftCompensation(base: Frame) -> qi.geometry.TransformTime
+
+  //! @brief Emitted when the frame or one of its parents are updated.
+  //! @since 1
+  sig updated()
+
+  //! @brief Frame ID.
+  //! @return A unique identifier for internal purpose. Do not use.
+  //! @since 1
+  fn _id() -> str
+end
+
+
+//! @brief Object representing a frame attached to a parent frame. The link
+//! between the parent and the attached frame, i.e. the relative location of the
+//! attached frame to its parent, is editable.
+//! In order to compute transforms between frames, one should use the frame()
+//! function of an AttachedFrame.
+//! @since 1
+interface AttachedFrame
+  //! @brief Retrieve the underlying Frame object that will be used for transform
+  //! computation.
+  //! @return A Frame corresponding to the current AttachedFrame
+  //! @since 1
+  fn frame() -> Frame
+
+  //! @brief Retrieve the parent Frame of the current AttachedFrame. It can be used
+  //! for introspection.
+  //! @return A Frame corresponding to the parent frame of the current
+  //! AttachedFrame
+  //! @since 1
+  fn parent() -> Frame
+
+  //! @brief Publish a new Transform between this frame and this frame's parent
+  //! frame. Emits frame()->updated() when called.
+  //! @param tf The new Transform of this Frame with respect to the base Frame.
+  //! @since 1
+  fn update(tf: qi.geometry.Transform)
+
+end
+
+//! @brief Object representing a reference frame free to be placed anywhere,
+//! that does not move when other frames move. The global position of a free frame
+//! can be updated by giving its location at a given time in a given reference
+//! frame.
+//! In order to compute transforms between frames, one should use the frame()
+//! function of a FreeFrame.
+//! The FreeFrame will be invalid right after creation until first update.
+//! @since 1
+interface FreeFrame
+  //! @brief Retrieve the underlying Frame object that will be used for transform
+  //! computation.
+  //! @return A Frame corresponding to the current FreeFrame
+  //! @since 1
+  fn frame() -> Frame
+
+  //! @brief Update the world location of the free frame by providing its
+  //! location in a given frame of reference at a given time.
+  //! @param tf The new Transform of this Frame with respect to the base Frame.
+  //! @param base The base Frame.
+  //! @param time The update time.
+  //! @since 1
+  fn update(base: Frame, tf: qi.geometry.Transform, time: qitimepoint)
+end

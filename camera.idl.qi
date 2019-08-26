@@ -1,0 +1,27 @@
+package qi.camera
+
+from qi.image import TimestampedImageHandle
+import qi.context
+
+//! @brief Action to take pictures on the robot.
+//! @since 3
+interface TakePicture
+  //! @brief Run the TakePicture action on the robot.
+  //! @return A qi.image.TimestampedImageHandle.
+  //! @since 3
+  fn run()-> TimestampedImageHandle
+
+  //! @brief Emitted when the action starts running.
+  //! @since 3
+  sig started()
+end
+
+//! @brief Service exposing actions and properties related to the robot camera.
+//! @since 3
+interface Camera
+  //! @brief Create a TakePicture action on the robot.
+  //! @param context A qi.context.Context
+  //! @return A TakePicture action.
+  //! @since 3
+  fn makeTakePicture(context: qi.context.Context)-> TakePicture
+end

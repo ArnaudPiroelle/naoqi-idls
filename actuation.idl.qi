@@ -1,0 +1,227 @@
+package qi.actuation
+
+import qi.geometry
+import qi.actuation
+import qi.context
+
+//! @brief Action to play animations on the robot.
+//! @since 1
+interface Animate
+  //! @brief Run the Animate on the robot.
+  //! The started() signal is emitted when the action starts.
+  //! @since 1
+  fn run()
+
+  //! @brief Emitted when the action starts running.
+  //! @since 1
+  sig started()
+
+  //! @brief Emitted when an animation label is reached.
+  //! @param label the UTF8-encoded label name
+  //! @param time the label time of occurrence, defined
+  //!             as a duration relative to the Animate start.
+  //! @since 3
+  sig labelReached(label: str, time: nsec)
+end
+
+//! @brief Action to make the robot go somewhere. The destination is represented
+//! by a target frame. The robot will try to reach safely the 2D
+//! location corresponding to the target frame while avoiding obstacles. The
+//! robot may look around and follow non-straight paths, in order to choose the
+//! safest way towards the target.
+//! @since 1
+interface GoTo
+  //! @brief Run the GoTo on the robot.
+  //! The started() signal is emitted when the action starts.
+  //! @since 1
+  fn run()
+
+  //! @brief Emitted when the action starts running.
+  //! @since 1
+  sig started()
+end
+
+//! @brief Strategies to look at a target.
+//! @since 1
+enum LookAtMovementPolicy
+  //! @brief Look at the target with the head only.
+  //! @since 1
+  const HeadOnly = 0
+  //! @brief Look at the target with the head,
+  //! using the mobile base if required.
+  //! @since 1
+  const HeadAndBase = 1
+end
+
+//! @brief Action to look at and track a target.
+//! The target is represented by a frame, and the robot will look at the origin
+//! of that frame.
+//! In practice, the action will make the robot move so that the x-axis of the
+//! gaze frame gets aligned with the origin of the target frame.
+//! The robot will track the target until the run is canceled.
+//! @since 1
+interface LookAt
+  //! @brief Run the action on the robot.
+  //! The started() signal is emitted when the action starts.
+  //! @since 1
+  fn run()
+
+  //! @brief Emitted when the action starts running.
+  //! @since 1
+  sig started()
+
+  //! @brief The policy applied during a LookAt run.
+  //! Setting this property will dynamically change the mobilized resources; if
+  //! the needed resources are not available, the LookAt run will fail.
+  //! @observable
+  //! @mutable
+  //! @since 1
+  prop policy(policy: LookAtMovementPolicy)
+end
+
+//! @brief Action to limit robot movements in order to ease user interaction on the tablet.
+//! The robot will put the tablet at a suitable position then emit
+//! the positionReached() signal, and prevent further leg and base movements,
+//! while also ensuring that the arms movements do not bring them
+//! in front of the tablet.
+//! @since 3
+interface EnforceTabletReachability
+  //! @brief Run the action on the robot.
+  //! The started() signal is emitted when the action starts.
+  //! The positionReached() signal is emitted when the tablet is in position.
+  //! Throw if the arms are initially in front of the tablet,
+  //! or are later moved in front of the tablet.
+  //! @since 3
+  fn run()
+
+  //! @brief Emitted when the action starts running.
+  //! @since 3
+  sig started()
+
+  //! @brief Emitted when the tablet has reached its final position.
+  //! @since 3
+  sig positionReached()
+end
+
+//! @brief The Actuation service contains the actions and objects needed to make
+//! the robot move:
+//! <ul>
+//! <li> the robot and gaze frames
+//! <li> the factory for Animation objects
+//! <li> the factories for GoTo, Animate and LookAt actions
+//! </ul>
+//! @since 1
+interface Actuation
+  //! @brief Create a new Animation object on the robot.
+  //! @param anims A vector of strings, each element representing the content
+  //! of an animation file.
+  //! @return An Animation object.
+  //! @since 1
+  fn makeAnimation(anims: Vec<str>) -> qi.actuation.Animation
+
+  //! @brief Create a new Animation object on the robot, by cropping an
+  //! existing animation.
+  //! @param anim the original animation.
+  //! @param beginTime the begin time of the cropped animation.
+  //! Shall be non-negative.
+  //! A zero value will preserve the beginning of the animation.
+  //! @param endTime the end time of the cropped animation.
+  //! Any value greater than anim.duration()-beginTime will preserve the end
+  //! of the animation.
+  //! @return An Animation object, result of the cropping from beginTime to
+  //! endTime.
+  //! @since 1
+  fn makeCroppedAnimation(anim: qi.actuation.Animation,
+                          beginTime: nsec,
+                          endTime: nsec) -> qi.actuation.Animation
+
+  //! @brief Create a new Animate action on the robot.
+  //! @param context A qi.context.Context.
+  //! @param animation The Animation to play.
+  //! @return An Animate action.
+  //! @since 1
+  fn makeAnimate(context: qi.context.Context,
+                 animation: qi.actuation.Animation) -> Animate
+
+  //! @brief Create a new GoTo action on the robot.
+  //! @param context A qi.context.Context.
+  //! @param target A Frame representing the target to reach.
+  //! @return A GoTo action.
+  //! @since 1
+  fn makeGoTo(context: qi.context.Context,
+              target: qi.actuation.Frame) -> GoTo
+
+  //! @brief Create a LookAt action on the robot.
+  //! @param context A qi.context.Context
+  //! @param target A frame representing the location of the target
+  //! to look at.
+  //! @return A LookAt action.
+  //! @since 1
+  fn makeLookAt(context: qi.context.Context,
+                target: qi.actuation.Frame) -> LookAt
+
+  //! @brief Create an EnforceTabletReachability action on the robot.
+  //! @param context A qi.context.Context
+  //! @return An EnforceTabletReachability action.
+  //! @since 3
+  fn makeEnforceTabletReachability(context: qi.context.Context) -> EnforceTabletReachability
+
+  //! @brief Retrieve the robot Frame.
+  //! @return A Frame representing the robot location.
+  //! @since 1
+  fn robotFrame() -> qi.actuation.Frame
+
+  //! @brief Retrieve the gaze Frame.
+  //! @return A Frame representing the robot gaze, i.e. where the robot seems
+  //! to be looking at.
+  //! The frame is positioned at the center of the eyes, and is oriented so
+  //! that:
+  //! <ul>
+  //! <li> the x-axis corresponds to the direction of the gaze,
+  //! <li> the y-axis corresponds to the line formed by the eyes, and points to the
+  //! left,
+  //! <li> the z-axis points towards the robot head top.
+  //! </ul>
+  //! @since 1
+  fn gazeFrame() -> qi.actuation.Frame
+end
+
+//! @brief A service providing the mapping of the local area.
+//! @since 1
+interface Mapping
+
+  //! @brief The local map Frame.
+  //! Read-only.
+  //! @return A Frame representing the map origin.
+  //! @since 1
+  fn mapFrame() -> qi.actuation.Frame
+
+  //! @brief The charging station Frame.
+  //! Read-only.
+  //! @return A Frame representing the charging station location.
+  //! @since 1
+  fn chargingStationFrame() -> qi.actuation.Frame
+
+  //! @brief Create a new FreeFrame that can be used for transforms with
+  //! respect to the world.
+  //! @return A newly created FreeFrame.
+  //! @since 1
+  fn makeFreeFrame() -> FreeFrame
+
+   //! @brief Create a ExplorationMap object, from serialized map data.
+   //! @return A newly created ExplorationMap.
+   //! @since 3
+   fn makeMap(data: str) -> qi.actuation.ExplorationMap
+
+   //! @brief Create a LocalizeAndMap action.
+   //! @since 3
+   //! @param context A qi.context.Context.
+   fn makeLocalizeAndMap(context: qi.context.Context) -> LocalizeAndMap
+
+   //! @brief Create a Localize action.
+   //! @since 3
+   //! @param context A qi.context.Context.
+   //! @param The ExplorationMap.
+   fn makeLocalize(context: qi.context.Context, map: ExplorationMap) -> Localize
+end
+

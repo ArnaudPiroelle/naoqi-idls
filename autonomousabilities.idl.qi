@@ -1,0 +1,52 @@
+package qi.autonomousabilities
+
+import qi.context
+
+//! A service allowing to pause or resume an Autonomous Ability.
+//! Once an activity holds an ability, the activity becomes owner of the ability, meaning it is the
+//! one able to control this ability as long as its holder is not released.
+//! Holding an ability automatically pauses it. To resume it, the
+//! owner must release it.
+//! @since 1
+interface AutonomousAbilities
+  //! Hold BasicAwareness ability.
+  //! @param context A qi.context.Context.
+  //! @return An AutonomousAbilityHolder holding BasicAwareness ability.
+  //! @since 1
+  fn holdBasicAwareness(context: qi.context.Context) -> AutonomousAbilityHolder
+
+  //! Hold BackgroundMovement ability.
+  //! @param context A qi.context.Context.
+  //! @return An AutonomousAbilityHolder holding BackgroundMovement ability.
+  //! @since 1
+  fn holdBackgroundMovement(context: qi.context.Context) -> AutonomousAbilityHolder
+
+  //! Hold AutonomousBlinking ability.
+  //! @param context A qi.context.Context.
+  //! @return An AutonomousAbilityHolder holding AutonomousBlinking ability.
+  //! @since 1
+  fn holdAutonomousBlinking(context: qi.context.Context) -> AutonomousAbilityHolder
+
+  //! Hold all unsupported abilities.
+  //! @param context A qi.context.Context.
+  //! @param qiSdkVersion The version of the Qi SDK.
+  //! @return An AutonomousAbilityHolder holding the unsupported abilities for the given qiSdkVersion.
+  //! @since 1
+  fn holdUnsupportedAbilities(context: qi.context.Context, qiSdkVersion: str) -> AutonomousAbilityHolder
+end
+
+//! An AutonomousAbilityHolder represents an autonomous ability being taken from the
+//! AutonomousAbilities service.
+//! It serves only once, and emits released() whenever the autonomous ability is released.
+//! An AutonomousAbilityHolder that was released is invalid.
+//! @since 1
+interface AutonomousAbilityHolder
+  //! Release the ability.
+  //! @since 1
+  fn release()
+
+  //! Emitted when the ability is released.
+  //! @since 1
+  sig released()
+end
+
